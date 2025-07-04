@@ -12,22 +12,28 @@
         /* Custom CSS for Inter font and general styling */
         body {
             font-family: "Inter", sans-serif;
-            background-color: #f0f2f5;
+            background-color: #f8fafc; /* Lighter background */
             display: flex;
-            justify-content: center;
-            align-items: flex-start; /* Align to top to prevent jumping */
+            justify-content: flex-start;
+            align-items: flex-start;
             min-height: 100vh;
             padding: 20px;
             box-sizing: border-box;
+            gap: 30px;
+            position: relative;
+        }
+        .main-content-wrapper {
+            flex-grow: 1;
+            max-width: 1500px;
+            margin-left: 350px;
+            transition: margin-left 0.3s ease;
         }
         .container {
             background-color: #ffffff;
             padding: 30px;
             border-radius: 15px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); /* More subtle shadow */
             width: 100%;
-            max-width: 900px;
-            margin-top: 20px; /* Add some margin from the top */
         }
         .input-group label {
             font-weight: 600;
@@ -36,20 +42,22 @@
             display: block;
         }
         .input-group input,
-        .input-group select {
+        .input-group select,
+        .input-group textarea {
             width: 100%;
             padding: 12px;
-            border: 1px solid #e0e0e0;
+            border: 1px solid #e5e7eb; /* Lighter border */
             border-radius: 8px;
             font-size: 16px;
-            transition: border-color 0.3s ease;
-            box-sizing: border-box; /* Ensure padding doesn't increase width */
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            box-sizing: border-box;
         }
         .input-group input:focus,
-        .input-group select:focus {
+        .input-group select:focus,
+        .input-group textarea:focus {
             outline: none;
             border-color: #6366f1; /* Indigo 500 */
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.15); /* More subtle focus shadow */
         }
         .action-buttons {
             display: grid;
@@ -62,88 +70,136 @@
                 grid-template-columns: 1fr 1fr;
             }
         }
-        .add-button, .export-button {
+        .add-button, .export-button, .auth-button, .add-note-button-main {
             color: white;
             padding: 12px 25px;
             border-radius: 8px;
             font-size: 17px;
             font-weight: 600;
             cursor: pointer;
-            transition: background-color 0.3s ease, transform 0.2s ease;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08); /* More subtle button shadow */
             border: none;
             width: 100%;
         }
         .add-button {
             background-color: #6366f1; /* Indigo 500 */
-            box-shadow: 0 5px 15px rgba(99, 102, 241, 0.3);
+            box-shadow: 0 3px 10px rgba(99, 102, 241, 0.2);
         }
         .add-button:hover {
             background-color: #4f46e5; /* Indigo 600 */
             transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(99, 102, 241, 0.25);
         }
         .add-button:active {
             transform: translateY(0);
-            box-shadow: 0 3px 10px rgba(99, 102, 241, 0.4);
+            box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
         }
         .export-button {
             background-color: #22c55e; /* Green 500 */
-            box-shadow: 0 5px 15px rgba(34, 197, 94, 0.3);
+            box-shadow: 0 3px 10px rgba(34, 197, 94, 0.2);
         }
         .export-button:hover {
             background-color: #16a34a; /* Green 600 */
             transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(34, 197, 94, 0.25);
         }
         .export-button:active {
             transform: translateY(0);
-            box-shadow: 0 3px 10px rgba(34, 197, 94, 0.4);
+            box-shadow: 0 2px 8px rgba(34, 197, 94, 0.3);
+        }
+        .auth-button {
+            background-color: #0ea5e9; /* Sky 500 */
+            box-shadow: 0 3px 10px rgba(14, 165, 233, 0.2);
+        }
+        .auth-button:hover {
+            background-color: #0284c7; /* Sky 600 */
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(14, 165, 233, 0.25);
+        }
+        .auth-button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 8px rgba(14, 165, 233, 0.3);
+        }
+        .add-note-button-main {
+            background-color: #8b5cf6; /* Violet 500 */
+            box-shadow: 0 3px 10px rgba(139, 92, 246, 0.2);
+            margin-top: 20px;
+        }
+        .add-note-button-main:hover {
+            background-color: #7c3aed; /* Violet 600 */
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(139, 92, 246, 0.25);
+        }
+        .add-note-button-main:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 8px rgba(139, 92, 246, 0.3);
+        }
+        .logout-button {
+            background-color: #f97316; /* Orange 500 */
+            color: white;
+            padding: 8px 15px;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+            border: none;
+            margin-left: auto;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05); /* Subtle shadow */
+        }
+        .logout-button:hover {
+            background-color: #ea580c; /* Orange 600 */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
         table {
             width: 100%;
-            border-collapse: separate; /* Use separate for rounded corners on cells */
+            border-collapse: separate;
             border-spacing: 0;
             margin-top: 30px;
             background-color: #ffffff;
             border-radius: 10px;
-            overflow: hidden; /* Ensures rounded corners are applied */
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); /* More subtle shadow */
         }
         th, td {
             text-align: left;
-            padding: 15px 20px;
-            border-bottom: 1px solid #f0f0f0;
+            padding: 14px 20px; /* Slightly reduced padding */
+            border-bottom: 1px solid #f3f4f6; /* Lighter border */
         }
         th {
-            background-color: #f8f9fa;
-            color: #555;
+            background-color: #f9fafb; /* Lighter header background */
+            color: #4b5563; /* Slightly softer text color */
             font-weight: 700;
             text-transform: uppercase;
-            font-size: 14px;
+            font-size: 13px; /* Slightly smaller font */
         }
         tr:last-child td {
             border-bottom: none;
         }
         tr:hover {
-            background-color: #f5f7fa;
+            background-color: #fbfdfe; /* Lighter hover effect */
         }
         .delete-button {
             background-color: #ef4444; /* Red 500 */
             color: white;
-            padding: 8px 12px;
+            padding: 7px 11px; /* Slightly reduced padding */
             border-radius: 6px;
-            font-size: 14px;
+            font-size: 13px; /* Slightly smaller font */
             cursor: pointer;
-            transition: background-color 0.3s ease;
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
             border: none;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05); /* Subtle shadow */
         }
         .delete-button:hover {
             background-color: #dc2626; /* Red 600 */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
         .error-message {
-            color: #ef4444; /* Red 500 */
+            color: #ef4444;
             font-size: 13px;
             margin-top: 5px;
-            display: none; /* Hidden by default */
+            display: none;
         }
         .loading-indicator {
             text-align: center;
@@ -151,8 +207,165 @@
             font-size: 18px;
             color: #666;
         }
+        .auth-section {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); /* More subtle shadow */
+            width: 100%;
+            max-width: 500px;
+            margin-top: 20px;
+            text-align: center;
+        }
+        .auth-section h2 {
+            font-size: 2xl;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .auth-section .input-group {
+            margin-bottom: 15px;
+        }
+        .auth-section .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .auth-section .button-group button {
+            flex: 1;
+        }
+        .security-warning {
+            background-color: #fef2f2;
+            color: #ef4444;
+            border: 1px solid #fca5a5;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+        .header-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .header-section h1 {
+            margin-bottom: 0;
+        }
+        .logged-in-user {
+            font-weight: 600;
+            color: #4f46e5;
+            margin-right: 15px;
+        }
+
+        /* NEW STYLES FOR MOVABLE NOTES */
+        #notesContainer {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            width: 300px;
+            max-height: calc(100vh - 40px);
+            overflow-y: auto;
+            background-color: #ffffff; /* White background for notes input area */
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); /* More subtle shadow */
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            z-index: 100;
+            transition: opacity 0.3s ease;
+        }
+        #notesContainer.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .draggable-note-box {
+            background-color: #fffacd; /* Light yellow for sticky note */
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* Slightly more pronounced shadow */
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            width: 280px;
+            box-sizing: border-box;
+            cursor: default;
+            z-index: 101;
+            transform: rotate(calc(var(--rotation) * 1deg)); /* Apply random rotation */
+            transition: box-shadow 0.2s ease, transform 0.1s ease; /* Smooth transition for hover/active */
+        }
+        .draggable-note-box:hover {
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15); /* Stronger shadow on hover */
+            transform: rotate(calc(var(--rotation) * 1deg)) scale(1.01); /* Slightly larger on hover */
+        }
+        .draggable-note-box.dragging {
+            cursor: grabbing;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2); /* Even stronger shadow when dragging */
+            transform: rotate(calc(var(--rotation) * 1deg)) scale(1.02); /* Slightly larger when dragging */
+        }
+
+
+        .draggable-note-header {
+            font-weight: 600;
+            color: #333;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #f3f4f6;
+            margin-bottom: 10px;
+            cursor: grab;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+        }
+
+        .draggable-note-text {
+            font-size: 0.95em;
+            color: #475569;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .note-delete-button-draggable {
+            background-color: #ef4444;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 5px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+            border: none;
+            margin-left: auto;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+        .note-delete-button-draggable:hover {
+            background-color: #dc2626;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
         /* Responsive adjustments */
-        @media (max-width: 768px) {
+        @media (max-width: 1024px) {
+            .main-content-wrapper {
+                margin-left: 20px;
+            }
+            #notesContainer {
+                position: static;
+                width: 100%;
+                max-height: none;
+                margin-top: 20px;
+            }
+            body {
+                flex-direction: column;
+                align-items: center;
+                padding: 10px;
+                gap: 10px;
+            }
             .container {
                 padding: 20px;
             }
@@ -162,7 +375,7 @@
             .action-buttons {
                 grid-template-columns: 1fr;
             }
-            .add-button, .export-button {
+            .add-button, .export-button, .add-note-button-main {
                 padding: 10px 20px;
                 font-size: 16px;
             }
@@ -206,76 +419,138 @@
                 width: 100%;
                 margin-top: 10px;
             }
+            .auth-section {
+                padding: 20px;
+            }
+            .auth-section .button-group {
+                flex-direction: column;
+            }
+            .draggable-note-box {
+                position: static;
+                width: 100%;
+                padding: 12px;
+                transform: none !important; /* Remove rotation on small screens */
+            }
+            .note-delete-button-draggable {
+                width: 100%;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1 class="text-3xl font-bold text-gray-800 mb-8 text-center">Daily Health Tracker</h1>
-
-        <!-- Input Form -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-            <div class="input-group">
-                <label for="dateInput">Date</label>
-                <input type="date" id="dateInput" class="rounded-lg" required>
-            </div>
-            <div class="input-group">
-                <label for="timePeriodSelect">Time Period</label>
-                <select id="timePeriodSelect" class="rounded-lg" required>
-                    <option value="Morning">Morning</option>
-                    <option value="Afternoon">Afternoon</option>
-                    <option value="Night">Night</option>
-                </select>
-            </div>
-            <div class="input-group">
-                <label for="bpLevelInput">BP Level (mmHg)</label>
-                <input type="text" id="bpLevelInput" class="rounded-lg" placeholder="e.g., 120/80" pattern="^\d{2,3}\/\d{2,3}$" required>
-                <p id="bpError" class="error-message">Please enter BP in ###/## format (e.g., 120/80).</p>
-            </div>
-            <div class="input-group">
-                <label for="sugarLevelInput">Sugar Level (mg/dL)</label>
-                <input type="number" id="sugarLevelInput" class="rounded-lg" placeholder="e.g., 90" min="50" required>
-                <p id="sugarError" class="error-message">Please enter a valid sugar level (min 50).</p>
-            </div>
+    <!-- Notes Container (fixed to the left for input) -->
+    <div id="notesContainer" class="hidden">
+        <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">My Notes</h2>
+        <div class="input-group">
+            <label for="noteInput">Add a new note</label>
+            <textarea id="noteInput" class="rounded-lg" rows="4" placeholder="Type your note here..."></textarea>
         </div>
+        <button id="addNoteButton" class="add-note-button-main">Add Note</button>
+        <!-- notesDisplay is removed from here, notes are appended directly to body -->
+    </div>
 
-        <div class="action-buttons">
-            <button id="addEntryButton" class="add-button">Add Entry</button>
-            <button id="exportExcelButton" class="export-button">Export to Excel</button>
-        </div>
+    <div class="main-content-wrapper">
+        <div class="container">
+            <div class="header-section">
+                <h1 class="text-3xl font-bold text-gray-800">Daily Health Tracker</h1>
+                <div id="userInfo" class="flex items-center">
+                    <span id="loggedInUsername" class="logged-in-user hidden"></span>
+                    <button id="logoutButton" class="logout-button hidden">Logout</button>
+                </div>
+            </div>
 
+            <!-- Security Warning -->
+            <div class="security-warning">
+                <strong>Welcome</strong> Just for quick data entry.
+            </div>
 
-        <!-- Loading Indicator -->
-        <div id="loadingIndicator" class="loading-indicator hidden">
-            Loading data...
-        </div>
+            <!-- Authentication Section -->
+            <div id="authSection" class="auth-section">
+                <h2 id="authTitle">Register</h2> <!-- Default to Register -->
+                <div class="input-group">
+                    <label for="authUsername">Username</label>
+                    <input type="text" id="authUsername" class="rounded-lg" required>
+                </div>
+                <div class="input-group">
+                    <label for="authPassword">Password</label>
+                    <input type="password" id="authPassword" class="rounded-lg" required>
+                </div>
+                <p id="authError" class="error-message text-left"></p>
+                <div class="button-group">
+                    <button id="loginButton" class="auth-button hidden">Login</button> <!-- Login hidden by default -->
+                    <button id="registerButton" class="auth-button">Register</button> <!-- Register visible by default -->
+                </div>
+                <p class="mt-4 text-sm text-gray-600">
+                    <a href="#" id="toggleAuthMode" class="text-indigo-600 hover:underline">Already have an account? Login here.</a>
+                </p>
+            </div>
 
-        <!-- Data Table -->
-        <div class="overflow-x-auto">
-            <table id="healthDataTable">
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Time Period</th>
-                        <th>BP Level</th>
-                        <th>Sugar Level</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- Data rows will be inserted here by JavaScript -->
-                </tbody>
-            </table>
-        </div>
+            <!-- Main Application Content (hidden until logged in) -->
+            <div id="appContent" class="hidden">
+                <!-- Input Form -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 mt-8">
+                    <div class="input-group">
+                        <label for="dateInput">Date</label>
+                        <input type="date" id="dateInput" class="rounded-lg" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="timePeriodSelect">Time Period</label>
+                        <select id="timePeriodSelect" class="rounded-lg" required>
+                            <option value="Morning">Morning</option>
+                            <option value="Afternoon">Afternoon</option>
+                            <option value="Night">Night</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label for="bpLevelInput">BP Level (mmHg)</label>
+                        <input type="text" id="bpLevelInput" class="rounded-lg" placeholder="e.g., 120/80" pattern="^\d{2,3}\/\d{2,3}$" required>
+                        <p id="bpError" class="error-message">Please enter BP in ###/## format (e.g., 120/80).</p>
+                    </div>
+                    <div class="input-group">
+                        <label for="sugarLevelInput">Sugar Level (mg/dL)</label>
+                        <input type="number" id="sugarLevelInput" class="rounded-lg" placeholder="e.g., 90" min="50" required>
+                        <p id="sugarError" class="error-message">Please enter a valid sugar level (min 50).</p>
+                    </div>
+                </div>
 
-        <!-- Custom Modal for Confirmation/Alerts -->
-        <div id="customModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center hidden">
-            <div class="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full text-center">
-                <h3 id="modalTitle" class="text-lg font-semibold mb-4"></h3>
-                <p id="modalMessage" class="text-gray-700 mb-6"></p>
-                <div class="flex justify-center space-x-4">
-                    <button id="modalConfirmButton" class="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 hidden">Confirm</button>
-                    <button id="modalCloseButton" class="bg-indigo-500 text-white px-4 py-2 rounded-md hover:bg-indigo-600">Close</button>
+                <div class="action-buttons">
+                    <button id="addEntryButton" class="add-button">Add Entry</button>
+                    <button id="exportExcelButton" class="export-button">Export to Excel</button>
+                </div>
+
+                <!-- Loading Indicator (still present but not used in localStorage version) -->
+                <div id="loadingIndicator" class="loading-indicator hidden">
+                    Loading data...
+                </div>
+
+                <!-- Data Table -->
+                <div class="overflow-x-auto">
+                    <table id="healthDataTable">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Time Period</th>
+                                <th>BP Level</th>
+                                <th>Sugar Level</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Data rows will be inserted here by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Custom Modal for Confirmation/Alerts -->
+            <div id="customModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center hidden">
+                <div class="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full text-center">
+                    <h3 id="modalTitle" class="text-lg font-semibold mb-4"></h3>
+                    <p id="modalMessage" class="text-gray-700 mb-6"></p>
+                    <div class="flex justify-center space-x-4">
+                        <button id="modalConfirmButton" class="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 hidden">Confirm</button>
+                        <button id="modalCloseButton" class="bg-indigo-500 text-white px-4 py-2 rounded-md hover:bg-indigo-600">Close</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -292,7 +567,28 @@
         const healthDataTableBody = document.querySelector('#healthDataTable tbody');
         const bpError = document.getElementById('bpError');
         const sugarError = document.getElementById('sugarError');
-        const loadingIndicator = document.getElementById('loadingIndicator'); // Still exists in HTML, but hidden
+        const loadingIndicator = document.getElementById('loadingIndicator');
+
+        // Auth elements
+        const authSection = document.getElementById('authSection');
+        const appContent = document.getElementById('appContent');
+        const authUsernameInput = document.getElementById('authUsername');
+        const authPasswordInput = document.getElementById('authPassword');
+        const loginButton = document.getElementById('loginButton');
+        const registerButton = document.getElementById('registerButton');
+        const authTitle = document.getElementById('authTitle');
+        const toggleAuthModeLink = document.getElementById('toggleAuthMode');
+        const authError = document.getElementById('authError');
+        const loggedInUsernameSpan = document.getElementById('loggedInUsername');
+        const logoutButton = document.getElementById('logoutButton');
+        const userInfoDiv = document.getElementById('userInfo');
+
+        // Note elements
+        const notesContainer = document.getElementById('notesContainer'); // Container for notes input
+        const noteInput = document.getElementById('noteInput');
+        const addNoteButton = document.getElementById('addNoteButton');
+        // notesDisplay is no longer needed as notes are appended directly to body
+
 
         // Modal elements
         const customModal = document.getElementById('customModal');
@@ -301,8 +597,19 @@
         const modalConfirmButton = document.getElementById('modalConfirmButton');
         const modalCloseButton = document.getElementById('modalCloseButton');
 
-        const LOCAL_STORAGE_KEY = 'healthTrackerData';
-        let currentHealthData = []; // Store current data for export
+        const LOCAL_STORAGE_USERS_KEY = 'healthTrackerUsers';
+        const LOCAL_STORAGE_CURRENT_USER_KEY = 'healthTrackerCurrentUser';
+        let currentHealthData = []; // Store current health data for export
+        let currentNotesData = []; // Store current notes data for display and export
+        let loggedInUser = null; // Store the currently logged-in username
+
+        // Dragging variables for notes
+        let isDragging = false;
+        let currentDraggable = null;
+        let initialMouseX;
+        let initialMouseY;
+        let initialElementX;
+        let initialElementY;
 
         /**
          * Shows a custom modal dialog.
@@ -365,37 +672,94 @@
         }
 
         /**
-         * Loads health data from localStorage.
-         * @returns {Array<Object>} - An array of health entry objects.
+         * Loads all user data from localStorage.
+         * @returns {Object} - Object where keys are usernames and values are user data objects.
          */
-        function loadHealthData() {
+        function loadAllUsersData() {
             try {
-                const data = localStorage.getItem(LOCAL_STORAGE_KEY);
-                return data ? JSON.parse(data) : [];
+                return JSON.parse(localStorage.getItem(LOCAL_STORAGE_USERS_KEY) || '{}');
             } catch (e) {
-                console.error("Error loading data from localStorage:", e);
-                showCustomModal("Error", "Failed to load saved data from your browser. " + e.message);
-                return [];
+                console.error("Error loading all users data from localStorage:", e);
+                showCustomModal("Error", "Failed to load user data. " + e.message);
+                return {};
             }
         }
 
         /**
-         * Saves health data to localStorage.
+         * Saves all user data to localStorage.
+         * @param {Object} allUsersData - The object containing all user data.
+         */
+        function saveAllUsersData(allUsersData) {
+            try {
+                localStorage.setItem(LOCAL_STORAGE_USERS_KEY, JSON.stringify(allUsersData));
+            } catch (e) {
+                console.error("Error saving all users data to localStorage:", e);
+                showCustomModal("Error", "Failed to save user data. " + e.message);
+            }
+        }
+
+        /**
+         * Loads health data for the current user.
+         * @returns {Array<Object>} - An array of health entry objects.
+         */
+        function loadHealthData() {
+            if (!loggedInUser) return [];
+            const allUsersData = loadAllUsersData();
+            return allUsersData[loggedInUser] ? allUsersData[loggedInUser].healthData : [];
+        }
+
+        /**
+         * Saves health data for the current user.
          * @param {Array<Object>} data - The array of health entry objects to save.
          */
         function saveHealthData(data) {
-            try {
-                localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data));
-            } catch (e) {
-                console.error("Error saving data to localStorage:", e);
-                showCustomModal("Error", "Failed to save data to your browser. " + e.message);
+            if (!loggedInUser) {
+                console.warn("Attempted to save health data without a logged-in user.");
+                return;
             }
+            const allUsersData = loadAllUsersData();
+            if (!allUsersData[loggedInUser]) {
+                allUsersData[loggedInUser] = { password: '', healthData: [], notes: [] };
+            }
+            allUsersData[loggedInUser].healthData = data;
+            saveAllUsersData(allUsersData);
+        }
+
+        /**
+         * Loads notes data for the current user.
+         * @returns {Array<Object>} - An array of note objects.
+         */
+        function loadNotesData() {
+            if (!loggedInUser) return [];
+            const allUsersData = loadAllUsersData();
+            return allUsersData[loggedInUser] ? allUsersData[loggedInUser].notes : [];
+        }
+
+        /**
+         * Saves notes data for the current user.
+         * @param {Array<Object>} data - The array of note objects to save.
+         */
+        function saveNotesData(data) {
+            if (!loggedInUser) {
+                console.warn("Attempted to save notes data without a logged-in user.");
+                return;
+            }
+            const allUsersData = loadAllUsersData();
+            if (!allUsersData[loggedInUser]) {
+                allUsersData[loggedInUser] = { password: '', healthData: [], notes: [] };
+            }
+            allUsersData[loggedInUser].notes = data;
+            saveAllUsersData(allUsersData);
         }
 
         /**
          * Adds a new health entry.
          */
         function addHealthEntry() {
+            if (!loggedInUser) {
+                showCustomModal("Login Required", "Please log in to add health entries.");
+                return;
+            }
             if (!validateInputs()) {
                 showCustomModal("Validation Error", "Please correct the errors in the form.");
                 return;
@@ -410,9 +774,9 @@
                 timestamp: Date.now() // Add a timestamp for ordering
             };
 
-            const updatedData = loadHealthData();
+            const updatedData = loadHealthData(); // Load data for the current user
             updatedData.push(newEntry);
-            saveHealthData(updatedData);
+            saveHealthData(updatedData); // Save data for the current user
             renderHealthData(updatedData);
 
             // Clear form fields after successful submission
@@ -427,6 +791,11 @@
          * @param {string} idToDelete - The ID of the entry to delete.
          */
         async function deleteHealthEntry(idToDelete) {
+            if (!loggedInUser) {
+                showCustomModal("Login Required", "Please log in to delete health entries.");
+                return;
+            }
+
             const confirmDelete = await showCustomModal(
                 "Confirm Delete",
                 "Are you sure you want to delete this entry?",
@@ -485,8 +854,12 @@
          * Exports the current health data to an Excel (.xlsx) file.
          */
         function exportToExcel() {
+            if (!loggedInUser) {
+                showCustomModal("Login Required", "Please log in to export data.");
+                return;
+            }
             if (currentHealthData.length === 0) {
-                showCustomModal("No Data", "There is no data to export yet.");
+                showCustomModal("No Data", "There is no health data to export yet.");
                 return;
             }
 
@@ -509,28 +882,372 @@
             XLSX.utils.book_append_sheet(wb, ws, "Health Data");
 
             // Write the workbook to a file
-            XLSX.writeFile(wb, "daily_health_tracker.xlsx");
+            XLSX.writeFile(wb, `${loggedInUser}_health_tracker.xlsx`);
+        }
+
+        /**
+         * Adds a new note for the current user.
+         */
+        function addNote() {
+            if (!loggedInUser) {
+                showCustomModal("Login Required", "Please log in to add notes.");
+                return;
+            }
+            const noteText = noteInput.value.trim();
+            if (noteText === '') {
+                showCustomModal("Input Required", "Please type your note before adding it.");
+                return;
+            }
+
+            const today = new Date();
+            const yyyy = today.getFullYear();
+            const mm = String(today.getMonth() + 1).padStart(2, '0');
+            const dd = String(today.getDate()).padStart(2, '0');
+            const noteDate = `${yyyy}-${mm}-${dd}`;
+
+            // Generate a random rotation for the sticky note effect
+            const rotation = (Math.random() * 6) - 3; // -3 to +3 degrees
+
+            const newNote = {
+                id: Date.now().toString(),
+                date: noteDate,
+                text: noteText,
+                timestamp: Date.now(),
+                // Store initial position for new notes - offset from notesContainer
+                position: { x: 350 + Math.random() * 50, y: 20 + Math.random() * 50 }, // Random initial position near the notes area
+                rotation: rotation // Store rotation
+            };
+
+            const updatedNotes = loadNotesData();
+            updatedNotes.push(newNote);
+            saveNotesData(updatedNotes);
+            createAndAppendDraggableNote(newNote); // Create and append the new draggable note
+            noteInput.value = ''; // Clear the textarea
+        }
+
+        /**
+         * Deletes a note.
+         * @param {string} idToDelete - The ID of the note to delete.
+         */
+        async function deleteNote(idToDelete) {
+            if (!loggedInUser) {
+                showCustomModal("Login Required", "Please log in to delete notes.");
+                return;
+            }
+
+            const confirmDelete = await showCustomModal(
+                "Confirm Delete",
+                "Are you sure you want to delete this note?",
+                true // isConfirm = true
+            );
+
+            if (!confirmDelete) {
+                return; // User cancelled
+            }
+
+            let updatedNotes = loadNotesData();
+            updatedNotes = updatedNotes.filter(note => note.id !== idToDelete);
+            saveNotesData(updatedNotes);
+            // Remove the note box from the DOM
+            const noteBoxToRemove = document.getElementById(`note-${idToDelete}`);
+            if (noteBoxToRemove) {
+                noteBoxToRemove.remove();
+            }
+        }
+
+        /**
+         * Creates and appends a draggable note box to the body.
+         * @param {Object} note - The note object.
+         */
+        function createAndAppendDraggableNote(note) {
+            const noteBox = document.createElement('div');
+            noteBox.id = `note-${note.id}`; // Unique ID for the DOM element
+            noteBox.className = 'draggable-note-box';
+            
+            // Set initial position if available, otherwise default
+            if (note.position && typeof note.position.x === 'number' && typeof note.position.y === 'number') {
+                noteBox.style.left = `${note.position.x}px`;
+                noteBox.style.top = `${note.position.y}px`;
+            } else {
+                // Default position for notes without saved position (to the right of notes container)
+                noteBox.style.left = '350px'; // 20px body padding + 300px notesContainer width + 30px gap
+                noteBox.style.top = `20px`; // Start at the top
+            }
+
+            // Apply rotation
+            noteBox.style.setProperty('--rotation', note.rotation || 0);
+
+
+            noteBox.innerHTML = `
+                <div class="draggable-note-header">
+                    <span>${note.date}</span>
+                    <button class="note-delete-button-draggable" data-id="${note.id}">X</button>
+                </div>
+                <p class="draggable-note-text">${note.text}</p>
+            `;
+            document.body.appendChild(noteBox); // Append directly to body
+
+            const header = noteBox.querySelector('.draggable-note-header');
+            const deleteButton = noteBox.querySelector('.note-delete-button-draggable');
+
+            // Attach drag events
+            header.addEventListener('mousedown', (e) => {
+                isDragging = true;
+                currentDraggable = noteBox;
+                initialMouseX = e.clientX;
+                initialMouseY = e.clientY;
+                initialElementX = noteBox.offsetLeft;
+                initialElementY = noteBox.offsetTop;
+                currentDraggable.classList.add('dragging'); // Add dragging class for visual feedback
+                // Bring the dragged note to the front
+                currentDraggable.style.zIndex = 1000;
+                // Prevent text selection during drag
+                e.preventDefault();
+            });
+
+            // Attach delete event
+            deleteButton.addEventListener('click', (e) => {
+                deleteNote(e.target.dataset.id);
+            });
+        }
+
+        /**
+         * Handles mousemove event for dragging notes.
+         * @param {MouseEvent} e - The mouse event.
+         */
+        function onMouseMove(e) {
+            if (!isDragging || !currentDraggable) return;
+
+            const dx = e.clientX - initialMouseX;
+            const dy = e.clientY - initialMouseY;
+
+            let newX = initialElementX + dx;
+            let newY = initialElementY + dy;
+
+            // Constrain movement within the viewport
+            const maxX = window.innerWidth - currentDraggable.offsetWidth;
+            const maxY = window.innerHeight - currentDraggable.offsetHeight;
+
+            newX = Math.max(0, Math.min(newX, maxX));
+            newY = Math.max(0, Math.min(newY, maxY));
+
+            currentDraggable.style.left = `${newX}px`;
+            currentDraggable.style.top = `${newY}px`;
+        }
+
+        /**
+         * Handles mouseup event to stop dragging and save position.
+         * @param {MouseEvent} e - The mouse event.
+         */
+        function onMouseUp(e) {
+            if (!isDragging || !currentDraggable) return;
+
+            isDragging = false;
+            currentDraggable.classList.remove('dragging'); // Remove dragging class
+            currentDraggable.style.cursor = 'grab'; // Reset cursor
+            currentDraggable.style.zIndex = 101; // Reset z-index
+
+            // Save the new position to localStorage
+            const noteId = currentDraggable.id.replace('note-', '');
+            let updatedNotes = loadNotesData();
+            const noteIndex = updatedNotes.findIndex(note => note.id === noteId);
+            if (noteIndex !== -1) {
+                updatedNotes[noteIndex].position = {
+                    x: currentDraggable.offsetLeft,
+                    y: currentDraggable.offsetTop
+                };
+                saveNotesData(updatedNotes);
+            }
+            currentDraggable = null;
+        }
+
+        // Add global mousemove and mouseup listeners for dragging
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', onMouseUp);
+
+
+        /**
+         * Renders the notes for the current user.
+         * @param {Array<Object>} data - An array of note objects.
+         */
+        function renderNotes(data) {
+            // Remove existing draggable notes from the body before re-rendering
+            document.querySelectorAll('.draggable-note-box').forEach(noteBox => noteBox.remove());
+
+            currentNotesData = data; // Update global notes data
+
+            if (data.length === 0) {
+                // No notes to display, no placeholder needed as notes are individual boxes
+                return;
+            }
+
+            // Sort notes by timestamp in descending order (most recent first)
+            data.sort((a, b) => b.timestamp - a.timestamp);
+
+            data.forEach(note => {
+                createAndAppendDraggableNote(note);
+            });
+        }
+
+
+        /**
+         * Authenticates a user.
+         * @param {string} username
+         * @param {string} password
+         * @returns {boolean} True if login successful, false otherwise.
+         */
+        function loginUser(username, password) {
+            const users = loadAllUsersData();
+            if (users[username] && users[username].password === password) {
+                loggedInUser = username;
+                localStorage.setItem(LOCAL_STORAGE_CURRENT_USER_KEY, username);
+                showAppContent();
+                showCustomModal("Success", `Welcome, ${username}!`);
+                return true;
+            }
+            authError.textContent = "Invalid username or password.";
+            authError.style.display = 'block';
+            return false;
+        }
+
+        /**
+         * Registers a new user.
+         * @param {string} username
+         * @param {string} password
+         * @returns {boolean} True if registration successful, false otherwise.
+         */
+        function registerUser(username, password) {
+            const users = loadAllUsersData();
+            if (users[username]) {
+                authError.textContent = "Username already exists. Please choose a different one or login.";
+                authError.style.display = 'block';
+                return false;
+            }
+            if (username.length < 3 || password.length < 3) {
+                 authError.textContent = "Username and password must be at least 3 characters long.";
+                 authError.style.display = 'block';
+                 return false;
+            }
+
+            users[username] = { password: password, healthData: [], notes: [] }; // Initialize notes array for new user
+            saveAllUsersData(users);
+            loggedInUser = username;
+            localStorage.setItem(LOCAL_STORAGE_CURRENT_USER_KEY, username);
+            showAppContent();
+            showCustomModal("Success", `Account created and logged in as ${username}!`);
+            return true;
+        }
+
+        /**
+         * Logs out the current user.
+         */
+        function logoutUser() {
+            loggedInUser = null;
+            localStorage.removeItem(LOCAL_STORAGE_CURRENT_USER_KEY);
+            hideAppContent();
+            authUsernameInput.value = '';
+            authPasswordInput.value = '';
+            authError.style.display = 'none';
+            authTitle.textContent = 'Register'; // Default to Register on logout
+            toggleAuthModeLink.textContent = "Already have an account? Login here."; // Update link text
+            loginButton.classList.add('hidden'); // Hide login button
+            registerButton.classList.remove('hidden'); // Show register button
+            showCustomModal("Logged Out", "You have been successfully logged out.");
+        }
+
+        /**
+         * Shows the main application content and hides the auth section.
+         */
+        function showAppContent() {
+            authSection.classList.add('hidden');
+            appContent.classList.remove('hidden');
+            loggedInUsernameSpan.textContent = `Logged in as: ${loggedInUser}`;
+            loggedInUsernameSpan.classList.remove('hidden');
+            logoutButton.classList.remove('hidden');
+            notesContainer.classList.remove('hidden'); // Show notes input container
+            renderHealthData(loadHealthData()); // Load health data for the newly logged-in user
+            renderNotes(loadNotesData()); // Load notes for the newly logged-in user
+        }
+
+        /**
+         * Hides the main application content and shows the auth section.
+         */
+        function hideAppContent() {
+            appContent.classList.add('hidden');
+            authSection.classList.remove('hidden');
+            loggedInUsernameSpan.classList.add('hidden');
+            logoutButton.classList.add('hidden');
+            notesContainer.classList.add('hidden'); // Hide notes input container
+            healthDataTableBody.innerHTML = ''; // Clear table on logout
+            // Remove all draggable notes from the body on logout
+            document.querySelectorAll('.draggable-note-box').forEach(noteBox => noteBox.remove());
         }
 
         // Event Listeners
         window.onload = () => {
-            // Set today's date as default
+            // Set today's date as default for health data input
             const today = new Date();
             const yyyy = today.getFullYear();
             const mm = String(today.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
             const dd = String(today.getDate()).padStart(2, '0');
             dateInput.value = `${yyyy}-${mm}-${dd}`;
 
-            // Load and render existing data from localStorage
-            renderHealthData(loadHealthData());
+            // Check for a logged-in user on load
+            const storedUser = localStorage.getItem(LOCAL_STORAGE_CURRENT_USER_KEY);
+            if (storedUser) {
+                loggedInUser = storedUser;
+                showAppContent();
+            } else {
+                // Default to Register mode if no user is logged in
+                authTitle.textContent = 'Register';
+                toggleAuthModeLink.textContent = "Already have an account? Login here.";
+                loginButton.classList.add('hidden');
+                registerButton.classList.remove('hidden');
+                hideAppContent();
+            }
         };
 
         addEntryButton.addEventListener('click', addHealthEntry);
         exportExcelButton.addEventListener('click', exportToExcel);
+        addNoteButton.addEventListener('click', addNote); // Event listener for add note button
+
+        // Auth event listeners
+        loginButton.addEventListener('click', () => {
+            authError.style.display = 'none';
+            loginUser(authUsernameInput.value, authPasswordInput.value);
+        });
+
+        registerButton.addEventListener('click', () => {
+            authError.style.display = 'none';
+            registerUser(authUsernameInput.value, authPasswordInput.value);
+        });
+
+        logoutButton.addEventListener('click', logoutUser);
+
+        toggleAuthModeLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            authError.style.display = 'none';
+            authUsernameInput.value = '';
+            authPasswordInput.value = '';
+            if (authTitle.textContent === 'Login') {
+                authTitle.textContent = 'Register';
+                toggleAuthModeLink.textContent = "Already have an account? Login here.";
+                loginButton.classList.add('hidden');
+                registerButton.classList.remove('hidden');
+            } else {
+                authTitle.textContent = 'Login';
+                toggleAuthModeLink.textContent = "Don't have an account? Register here.";
+                loginButton.classList.remove('hidden');
+                registerButton.classList.add('hidden');
+            }
+        });
 
         // Hide error messages on input change
         bpLevelInput.addEventListener('input', () => bpError.style.display = 'none');
         sugarLevelInput.addEventListener('input', () => sugarError.style.display = 'none');
+        authUsernameInput.addEventListener('input', () => authError.style.display = 'none');
+        authPasswordInput.addEventListener('input', () => authError.style.display = 'none');
+        noteInput.addEventListener('input', () => { /* No specific error for notes, but can be added */ });
     </script>
 </body>
 </html>
