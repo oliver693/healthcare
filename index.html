@@ -590,9 +590,55 @@
             margin: 0 auto; /* Center the chart */
             display: block; /* Ensure it behaves as a block element for margin auto */
         }
+
+        /* Notification styles */
+        #notificationContainer {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 12px 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            color: white;
+            font-weight: 600;
+            z-index: 10000; /* Ensure it's on top */
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        #notificationContainer.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        #notificationContainer.success {
+            background-color: #22c55e; /* Green 500 */
+        }
+        #notificationContainer.error {
+            background-color: #ef4444; /* Red 500 */
+        }
+        #notificationContainer.warning {
+            background-color: #f97316; /* Orange 500 */
+        }
+        #notificationContainer.info {
+            background-color: #0ea5e9; /* Sky 500 */
+        }
+        .notification-icon {
+            width: 20px;
+            height: 20px;
+        }
     </style>
 </head>
 <body>
+    <!-- Notification Container -->
+    <div id="notificationContainer" class="hidden">
+        <span id="notificationIcon" class="notification-icon"></span>
+        <span id="notificationMessage"></span>
+    </div>
+
     <!-- Sidebar Navigation -->
     <div class="sidebar" id="sidebar">
         <h2 class="sidebar-header">Health Tracker</h2>
@@ -787,6 +833,37 @@
             <!-- All Health Entries Page -->
             <div id="allEntriesPage" class="page-section container">
                 <h2 class="text-2xl font-bold text-gray-800 mb-4">All Health Entries</h2>
+                <div class="filter-controls bg-gray-50 p-4 rounded-lg mb-6 shadow-sm">
+                    <h3 class="text-lg font-semibold text-gray-700 mb-3">Filter Entries</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div class="input-group">
+                            <label for="filterStartDate">Start Date:</label>
+                            <input type="date" id="filterStartDate" class="rounded-lg">
+                        </div>
+                        <div class="input-group">
+                            <label for="filterEndDate">End Date:</label>
+                            <input type="date" id="filterEndDate" class="rounded-lg">
+                        </div>
+                        <div class="input-group">
+                            <label for="filterTimePeriod">Time Period:</label>
+                            <select id="filterTimePeriod" class="rounded-lg">
+                                <option value="All">All</option>
+                                <option value="Morning">Morning</option>
+                                <option value="Afternoon">Afternoon</option>
+                                <option value="Night">Night</option>
+                            </select>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <input type="checkbox" id="filterHighBp" class="rounded text-red-500 focus:ring-red-500">
+                            <label for="filterHighBp" class="text-gray-700">Show High BP Only</label>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <input type="checkbox" id="filterHighSugar" class="rounded text-amber-500 focus:ring-amber-500">
+                            <label for="filterHighSugar" class="text-gray-700">Show High Sugar Only</label>
+                        </div>
+                    </div>
+                    <button id="applyFiltersButton" class="add-button mt-4">Apply Filters</button>
+                </div>
                 <div class="overflow-x-auto">
                     <table id="healthDataTable">
                         <thead>
@@ -949,6 +1026,20 @@
         const modalConfirmButton = document.getElementById('modalConfirmButton');
         const modalCloseButton = document.getElementById('modalCloseButton');
 
+        // Notification elements
+        const notificationContainer = document.getElementById('notificationContainer');
+        const notificationMessage = document.getElementById('notificationMessage');
+        const notificationIcon = document.getElementById('notificationIcon');
+        let notificationTimeout;
+
+        // Filter elements
+        const filterStartDate = document.getElementById('filterStartDate');
+        const filterEndDate = document.getElementById('filterEndDate');
+        const filterTimePeriod = document.getElementById('filterTimePeriod');
+        const filterHighBp = document.getElementById('filterHighBp');
+        const filterHighSugar = document.getElementById('filterHighSugar');
+        const applyFiltersButton = document.getElementById('applyFiltersButton');
+
         // Firebase variables
         let firebaseApp = null;
         let db = null;
@@ -985,6 +1076,41 @@
         const HIGH_SUGAR_LEVEL = 180; // mg/dL (post-meal for general tracking)
 
         /**
+         * Displays a notification message at the top of the screen.
+         * @param {string} message - The message to display.
+         * @param {'success'|'error'|'warning'|'info'} type - The type of notification.
+         */
+        function showNotification(message, type) {
+            // Clear any existing timeout to prevent overlapping notifications
+            clearTimeout(notificationTimeout);
+
+            notificationContainer.classList.remove('hidden', 'success', 'error', 'warning', 'info', 'show');
+            notificationContainer.classList.add(type, 'show');
+            notificationMessage.textContent = message;
+
+            // Set icon based on type
+            let iconSvg = '';
+            if (type === 'success') {
+                iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5"><path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm13.36-1.814a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z" clip-rule="evenodd" /></svg>';
+            } else if (type === 'error') {
+                iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5"><path fill-rule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zm-1.72 6.97a.75.75 0 10-1.06 1.06L10.94 12l-1.72 1.72a.75.75 0 101.06 1.06L12 13.06l1.72 1.72a.75.75 0 101.06-1.06L13.06 12l1.72-1.72a.75.75 0 10-1.06-1.06L12 10.94l-1.72-1.72z" clip-rule="evenodd" /></svg>';
+            } else if (type === 'warning') {
+                iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5"><path fill-rule="evenodd" d="M9.401 3.003c1.155-2.003 4.32-.003 5.475 2.003 1.453 2.513 8.636 14.78-2.882 14.78-11.516 0-4.33-12.267-2.882-14.78zM12 9a.75.75 0 01.75.75v3.75a.75.75 0 01-1.5 0V9.75A.75.75 0 0112 9zm0 6a.75.75 0 100 1.5.75.75 0 000-1.5z" clip-rule="evenodd" /></svg>';
+            } else if (type === 'info') {
+                iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5"><path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm8.706-1.442c1.146-.573 2.437.463 2.126 1.706l-.709 2.836-.042.12a.75.75 0 01-1.274-.39c-.243-.513-.17-1.484.525-2.657.154-.334.29-.65.407-.933.115-.278.225-.56.33-.83.025-.062.05-.12.074-.182.025-.062.047-.122.07-.184.024-.06.046-.118.068-.176.02-.056.04-.112.059-.168.02-.055.038-.107.057-.16.018-.052.035-.103.053-.155.018-.05.033-.098.05-.148.016-.047.03-.093.044-.138.014-.042.026-.084.037-.126.011-.04.02-.078.028-.116.008-.037.015-.073.021-.108.006-.033.01-.065.013-.098.003-.03.005-.06.005-.09V9.45a.75.75 0 011.5 0v.75a.75.75 0 00.75.75h.75a.75.75 0 010 1.5h-.75a.75.75 0 00-.75.75v.75a.75.75 0 01-1.5 0zM12 15a.75.75 0 100 1.5.75.75 0 000-1.5z" clip-rule="evenodd" /></svg>';
+            }
+            notificationIcon.innerHTML = iconSvg;
+
+            notificationTimeout = setTimeout(() => {
+                notificationContainer.classList.remove('show');
+                // Use a small delay before hiding completely to allow transition
+                setTimeout(() => {
+                    notificationContainer.classList.add('hidden');
+                }, 300);
+            }, 3000); // Hide after 3 seconds
+        }
+
+        /**
          * Initializes Firebase and sets up auth state listener.
          */
         async function initializeFirebase() {
@@ -1007,6 +1133,7 @@
                         showAppContent();
                         showPage('homePage'); // Show home page after login
                         setupRealtimeListeners(); // Setup listeners when user is logged in
+                        showNotification("Logged in successfully!", "success");
                     } else {
                         loggedInUser = null;
                         console.log("Firebase Auth State Changed: Logged out.");
@@ -1020,6 +1147,7 @@
                             unsubscribeNotes = null;
                         }
                         hideAppContent();
+                        showNotification("You have been successfully logged out.", "info");
                     }
                     loadingIndicator.classList.add('hidden'); // Hide loading once auth is resolved
                 });
@@ -1035,6 +1163,7 @@
             } catch (error) {
                 console.error("Failed to initialize Firebase:", error);
                 showCustomModal("Error", "Failed to initialize Firebase: " + error.message);
+                showNotification("Failed to initialize Firebase: " + error.message, "error");
                 loadingIndicator.classList.add('hidden');
             }
         }
@@ -1061,6 +1190,7 @@
                 console.error("Error loading user profile:", error);
                 profileMessage.textContent = "Error loading profile.";
                 profileMessage.style.color = '#ef4444';
+                showNotification("Error loading profile: " + error.message, "error");
             }
         }
 
@@ -1070,6 +1200,7 @@
         async function updateUserProfile() {
             if (!loggedInUser || !db) {
                 showCustomModal("Login Required", "Please log in to update your profile.");
+                showNotification("Login Required: Please log in to update your profile.", "error");
                 return;
             }
             loadingIndicator.classList.remove('hidden');
@@ -1084,10 +1215,12 @@
                 updateLoggedInUsernameDisplay();
                 profileMessage.textContent = "Profile updated successfully!";
                 profileMessage.style.color = '#22c55e';
+                showNotification("Profile updated successfully!", "success");
             } catch (error) {
                 console.error("Error updating user profile:", error);
                 profileMessage.textContent = "Failed to update profile: " + error.message;
                 profileMessage.style.color = '#ef4444';
+                showNotification("Failed to update profile: " + error.message, "error");
             } finally {
                 loadingIndicator.classList.add('hidden');
             }
@@ -1124,7 +1257,7 @@
                     data.push({ id: doc.id, ...doc.data() });
                 });
                 currentHealthData = data;
-                renderHealthData(currentHealthData);
+                applyFilters(); // Apply filters and render data
                 renderHighValueData(currentHealthData); // Render high value data as well
                 updateHomeOverview(currentHealthData); // Update home page stats
                 renderChart(currentHealthData); // Update chart
@@ -1134,6 +1267,7 @@
                 // Only show modal if user is logged in, otherwise it's expected permission error on logout
                 if (loggedInUser) {
                     showCustomModal("Error", "Failed to load health data: " + error.message);
+                    showNotification("Failed to load health data: " + error.message, "error");
                 }
             });
 
@@ -1152,6 +1286,7 @@
                 // Only show modal if user is logged in, otherwise it's expected permission error on logout
                 if (loggedInUser) {
                     showCustomModal("Error", "Failed to load notes data: " + error.message);
+                    showNotification("Failed to load notes data: " + error.message, "error");
                 }
             });
         }
@@ -1223,10 +1358,12 @@
         async function addHealthEntry() {
             if (!loggedInUser || !db) {
                 showCustomModal("Login Required", "Please log in to add health entries.");
+                showNotification("Login Required: Please log in to add health entries.", "error");
                 return;
             }
             if (!validateInputs()) {
                 showCustomModal("Validation Error", "Please correct the errors in the form.");
+                showNotification("Validation Error: Please correct the errors in the form.", "error");
                 return;
             }
 
@@ -1241,7 +1378,12 @@
                     timestamp: Date.now()
                 };
                 await addDoc(healthCollectionRef, newEntry);
-                showCustomModal("Success", "Health entry added successfully!");
+                showNotification("Health entry added successfully!", "success");
+
+                // Check for high sugar level and notify
+                if (newEntry.sugarLevel > HIGH_SUGAR_LEVEL) {
+                    showNotification(`Warning: High sugar level detected (${newEntry.sugarLevel} mg/dL)!`, "warning");
+                }
 
                 // Clear form fields after successful submission
                 dateInput.value = '';
@@ -1252,6 +1394,7 @@
             } catch (e) {
                 console.error("Error adding health entry:", e);
                 showCustomModal("Error", "Failed to add health entry: " + e.message);
+                showNotification("Failed to add health entry: " + e.message, "error");
             } finally {
                 loadingIndicator.classList.add('hidden');
             }
@@ -1264,6 +1407,7 @@
         async function deleteHealthEntry(idToDelete) {
             if (!loggedInUser || !db) {
                 showCustomModal("Login Required", "Please log in to delete health entries.");
+                showNotification("Login Required: Please log in to delete health entries.", "error");
                 return;
             }
 
@@ -1274,6 +1418,7 @@
             );
 
             if (!confirmDelete) {
+                showNotification("Deletion cancelled.", "info");
                 return;
             }
 
@@ -1281,10 +1426,11 @@
             try {
                 const docRef = doc(db, `artifacts/${appId}/users/${loggedInUser.uid}/healthData`, idToDelete);
                 await deleteDoc(docRef);
-                showCustomModal("Success", "Health entry deleted successfully!");
+                showNotification("Health entry deleted successfully!", "success");
             } catch (e) {
                 console.error("Error deleting health entry:", e);
                 showCustomModal("Error", "Failed to delete health entry: " + e.message);
+                showNotification("Failed to delete health entry: " + e.message, "error");
             } finally {
                 loadingIndicator.classList.add('hidden');
             }
@@ -1296,14 +1442,14 @@
          */
         function renderHealthData(data) {
             healthDataTableBody.innerHTML = '';
-            currentHealthData = data;
 
             if (data.length === 0) {
                 healthDataTableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-gray-500">No entries yet. Add your first entry above!</td></tr>';
                 return;
             }
 
-            data.sort((a, b) => b.timestamp - a.timestamp); // Sort by timestamp descending
+            // Sort by timestamp ascending (first add to last add)
+            data.sort((a, b) => a.timestamp - b.timestamp);
 
             data.forEach(entry => {
                 const row = healthDataTableBody.insertRow();
@@ -1332,6 +1478,42 @@
                 };
             });
         }
+
+        /**
+         * Applies filters to the current health data and re-renders the table.
+         */
+        function applyFilters() {
+            let filteredData = [...currentHealthData]; // Start with a copy of all data
+
+            const startDate = filterStartDate.value ? new Date(filterStartDate.value).setHours(0, 0, 0, 0) : null;
+            const endDate = filterEndDate.value ? new Date(filterEndDate.value).setHours(23, 59, 59, 999) : null;
+            const timePeriod = filterTimePeriod.value;
+            const showHighBp = filterHighBp.checked;
+            const showHighSugar = filterHighSugar.checked;
+
+            filteredData = filteredData.filter(entry => {
+                const entryDate = new Date(entry.date).getTime();
+                const bpParts = entry.bpLevel.split('/').map(Number);
+                const isHighBp = bpParts[0] > HIGH_BP_SYSTOLIC || bpParts[1] > HIGH_BP_DIASTOLIC;
+                const isHighSugar = entry.sugarLevel > HIGH_SUGAR_LEVEL;
+
+                // Date range filter
+                if (startDate && entryDate < startDate) return false;
+                if (endDate && entryDate > endDate) return false;
+
+                // Time period filter
+                if (timePeriod !== 'All' && entry.timePeriod !== timePeriod) return false;
+
+                // High BP/Sugar filters
+                if (showHighBp && !isHighBp) return false;
+                if (showHighSugar && !isHighSugar) return false;
+
+                return true;
+            });
+
+            renderHealthData(filteredData);
+        }
+
 
         /**
          * Renders only the high-value health data in a separate table.
@@ -1378,10 +1560,12 @@
         function exportToExcel() {
             if (!loggedInUser) {
                 showCustomModal("Login Required", "Please log in to export data.");
+                showNotification("Login Required: Please log in to export data.", "error");
                 return;
             }
             if (currentHealthData.length === 0) {
                 showCustomModal("No Data", "There is no health data to export yet.");
+                showNotification("No Data: There is no health data to export yet.", "info");
                 return;
             }
 
@@ -1398,6 +1582,7 @@
             const ws = XLSX.utils.aoa_to_sheet(dataForSheet);
             XLSX.utils.book_append_sheet(wb, ws, "Health Data");
             XLSX.writeFile(wb, `${loggedInUser.email || loggedInUser.uid}_health_tracker.xlsx`);
+            showNotification("Data exported successfully!", "success");
         }
 
         /**
@@ -1407,6 +1592,7 @@
         async function importFromExcel(event) {
             if (!loggedInUser || !db) {
                 showCustomModal("Login Required", "Please log in to import data.");
+                showNotification("Login Required: Please log in to import data.", "error");
                 return;
             }
 
@@ -1428,6 +1614,7 @@
 
                     if (json.length < 2) {
                         showCustomModal("Import Error", "Excel file is empty or has no data rows.");
+                        showNotification("Import Error: Excel file is empty or has no data rows.", "error");
                         return;
                     }
 
@@ -1437,6 +1624,7 @@
                     // Basic header validation
                     if (!expectedHeaders.every(h => headers.includes(h))) {
                         showCustomModal("Import Error", "Excel file headers do not match expected format. Expected: Date, Time Period, BP Level (mmHg), Sugar Level (mg/dL).");
+                        showNotification("Import Error: Invalid Excel file format.", "error");
                         return;
                     }
 
@@ -1471,9 +1659,11 @@
                         }
                     }
                     showCustomModal("Import Complete", `Successfully imported ${importedCount} health entries.`);
+                    showNotification(`Successfully imported ${importedCount} health entries.`, "success");
                 } catch (error) {
                     console.error("Error importing Excel file:", error);
                     showCustomModal("Import Error", "Failed to import Excel file. Please ensure it's a valid .xlsx or .xls file and follows the correct format. Error: " + error.message);
+                    showNotification("Failed to import Excel file: " + error.message, "error");
                 } finally {
                     loadingIndicator.classList.add('hidden');
                     event.target.value = ''; // Clear file input
@@ -1483,6 +1673,7 @@
             reader.onerror = (error) => {
                 console.error("FileReader error:", error);
                 showCustomModal("File Read Error", "Failed to read the file. Please try again.");
+                showNotification("File Read Error: Failed to read the file.", "error");
                 loadingIndicator.classList.add('hidden');
             };
 
@@ -1496,11 +1687,13 @@
         async function addNote() {
             if (!loggedInUser || !db) {
                 showCustomModal("Login Required", "Please log in to add notes.");
+                showNotification("Login Required: Please log in to add notes.", "error");
                 return;
             }
             const noteText = noteInput.value.trim();
             if (noteText === '') {
                 showCustomModal("Input Required", "Please type your note before adding it.");
+                showNotification("Input Required: Please type your note before adding it.", "warning");
                 return;
             }
 
@@ -1526,11 +1719,12 @@
                     rotation: rotation
                 };
                 await addDoc(notesCollectionRef, newNote);
-                showCustomModal("Success", "Note added successfully!");
+                showNotification("Note added successfully!", "success");
                 noteInput.value = '';
             } catch (e) {
                 console.error("Error adding note:", e);
                 showCustomModal("Error", "Failed to add note: " + e.message);
+                showNotification("Failed to add note: " + e.message, "error");
             } finally {
                 loadingIndicator.classList.add('hidden');
             }
@@ -1543,6 +1737,7 @@
         async function deleteNote(idToDelete) {
             if (!loggedInUser || !db) {
                 showCustomModal("Login Required", "Please log in to delete notes.");
+                showNotification("Login Required: Please log in to delete notes.", "error");
                 return;
             }
 
@@ -1553,6 +1748,7 @@
             );
 
             if (!confirmDelete) {
+                showNotification("Deletion cancelled.", "info");
                 return;
             }
 
@@ -1560,10 +1756,11 @@
             try {
                 const docRef = doc(db, `artifacts/${appId}/users/${loggedInUser.uid}/notes`, idToDelete);
                 await deleteDoc(docRef);
-                showCustomModal("Success", "Note deleted successfully!");
+                showNotification("Note deleted successfully!", "success");
             } catch (e) {
                 console.error("Error deleting note:", e);
                 showCustomModal("Error", "Failed to delete note: " + e.message);
+                showNotification("Failed to delete note: " + e.message, "error");
             } finally {
                 loadingIndicator.classList.add('hidden');
             }
@@ -1583,8 +1780,10 @@
                 const docRef = doc(db, `artifacts/${appId}/users/${loggedInUser.uid}/notes`, idToUpdate);
                 await updateDoc(docRef, { position: newPosition });
                 console.log(`Note ${idToUpdate} position updated to x=${newPosition.x}, y=${newPosition.y}`);
+                // No notification for position update as it's a frequent background action
             } catch (e) {
                 console.error("Error updating note position:", e);
+                showNotification("Failed to save note position: " + e.message, "error");
             }
         }
 
@@ -1736,7 +1935,7 @@
             try {
                 // Attempt to sign in
                 await signInWithEmailAndPassword(auth, email, password);
-                showCustomModal("Success", `Welcome, ${email}!`);
+                showNotification(`Welcome, ${email}!`, "success");
                 return true;
             } catch (error) {
                 console.error("Login error:", error);
@@ -1754,10 +1953,11 @@
                             if (password.length < 6) {
                                 authError.textContent = "Password must be at least 6 characters long for registration.";
                                 authError.style.display = 'block';
+                                showNotification("Password must be at least 6 characters long for registration.", "warning");
                                 return false;
                             }
                             await createUserWithEmailAndPassword(auth, email, password);
-                            showCustomModal("Success", `Account created and logged in as ${email}!`);
+                            showNotification(`Account created and logged in as ${email}!`, "success");
                             return true;
                         } catch (registerError) {
                             console.error("Registration error after login attempt:", registerError);
@@ -1771,12 +1971,14 @@
                             }
                             authError.textContent = registerErrorMessage;
                             authError.style.display = 'block';
+                            showNotification(registerErrorMessage, "error");
                             return false;
                         }
                     } else {
                         // User chose not to register
                         authError.textContent = "Login failed. Please try again or register.";
                         authError.style.display = 'block';
+                        showNotification("Login failed. Please try again or register.", "error");
                         return false;
                     }
                 } else if (error.code === 'auth/wrong-password') {
@@ -1786,6 +1988,7 @@
                 }
                 authError.textContent = errorMessage;
                 authError.style.display = 'block';
+                showNotification(errorMessage, "error");
                 return false;
             } finally {
                 loadingIndicator.classList.add('hidden');
@@ -1805,10 +2008,11 @@
                 if (password.length < 6) {
                     authError.textContent = "Password must be at least 6 characters long.";
                     authError.style.display = 'block';
+                    showNotification("Password must be at least 6 characters long.", "warning");
                     return false;
                 }
                 await createUserWithEmailAndPassword(auth, email, password);
-                showCustomModal("Success", `Account created and logged in as ${email}!`);
+                showNotification(`Account created and logged in as ${email}!`, "success");
                 return true;
             } catch (error) {
                 console.error("Registration error:", error);
@@ -1822,6 +2026,7 @@
                 }
                 authError.textContent = errorMessage;
                 authError.style.display = 'block';
+                showNotification(errorMessage, "error");
                 return false;
             } finally {
                 loadingIndicator.classList.add('hidden');
@@ -1837,7 +2042,7 @@
             try {
                 const provider = new GoogleAuthProvider();
                 await signInWithPopup(auth, provider);
-                showCustomModal("Success", `Welcome, ${auth.currentUser.email}!`);
+                showNotification(`Welcome, ${auth.currentUser.email}!`, "success");
             } catch (error) {
                 console.error("Google Sign-In error:", error);
                 let errorMessage = "Google Sign-In failed.";
@@ -1854,6 +2059,7 @@
                 }
                 authError.textContent = errorMessage;
                 authError.style.display = 'block';
+                showNotification(errorMessage, "error");
             } finally {
                 loadingIndicator.classList.add('hidden');
             }
@@ -1869,6 +2075,7 @@
 
             if (!phoneNumber) {
                 showCustomModal("Input Required", "Please enter a phone number.");
+                showNotification("Input Required: Please enter a phone number.", "warning");
                 loadingIndicator.classList.add('hidden');
                 return;
             }
@@ -1881,12 +2088,14 @@
                         // reCAPTCHA solved, allow signInWithPhoneNumber.
                         console.log("reCAPTCHA solved:", response);
                         sendSmsButton.disabled = false; // Enable button once reCAPTCHA is solved
+                        showNotification("reCAPTCHA solved, click 'Send SMS Code' again.", "info");
                     },
                     'expired-callback': () => {
                         // Response expired. Ask user to solve reCAPTCHA again.
                         console.log("reCAPTCHA expired.");
                         sendSmsButton.disabled = true;
                         showCustomModal("reCAPTCHA Expired", "Please solve the reCAPTCHA again.");
+                        showNotification("reCAPTCHA expired. Please solve again.", "warning");
                     }
                 });
                 try {
@@ -1895,6 +2104,7 @@
                 } catch (error) {
                     console.error("Error rendering reCAPTCHA:", error);
                     showCustomModal("Error", "Failed to load reCAPTCHA. Please try again later.");
+                    showNotification("Failed to load reCAPTCHA. Please try again later.", "error");
                     loadingIndicator.classList.add('hidden');
                     return;
                 }
@@ -1904,7 +2114,7 @@
 
             try {
                 confirmationResult = await signInWithPhoneNumber(auth, phoneNumber, window.recaptchaVerifier);
-                showCustomModal("SMS Sent", `Verification code sent to ${phoneNumber}.`);
+                showNotification(`Verification code sent to ${phoneNumber}.`, "success");
                 phoneVerificationSection.classList.remove('hidden'); // Show code input section
                 phoneInputSection.classList.add('hidden'); // Hide phone input section
             } catch (error) {
@@ -1921,6 +2131,7 @@
                 }
                 authError.textContent = errorMessage;
                 authError.style.display = 'block';
+                showNotification(errorMessage, "error");
             } finally {
                 loadingIndicator.classList.add('hidden');
                 sendSmsButton.disabled = false; // Re-enable button
@@ -1937,13 +2148,14 @@
 
             if (!code) {
                 showCustomModal("Input Required", "Please enter the verification code.");
+                showNotification("Input Required: Please enter the verification code.", "warning");
                 loadingIndicator.classList.add('hidden');
                 return;
             }
             if (confirmationResult) {
                 try {
                     await confirmationResult.confirm(code);
-                    showCustomModal("Success", "Phone number verified and logged in!");
+                    showNotification("Phone number verified and logged in!", "success");
                     phoneVerificationSection.classList.add('hidden'); // Hide verification section
                     // reCAPTCHA will be reset by Firebase on successful sign-in
                 } catch (error) {
@@ -1956,11 +2168,13 @@
                     }
                     authError.textContent = errorMessage;
                     authError.style.display = 'block';
+                    showNotification(errorMessage, "error");
                 } finally {
                     loadingIndicator.classList.add('hidden');
                 }
             } else {
                 showCustomModal("Error", "No verification process initiated. Please try phone sign-in again.");
+                showNotification("Error: No verification process initiated. Please try phone sign-in again.", "error");
                 loadingIndicator.classList.add('hidden');
             }
         }
@@ -1973,10 +2187,11 @@
             loadingIndicator.classList.remove('hidden');
             try {
                 await signOut(auth);
-                showCustomModal("Logged Out", "You have been successfully logged out.");
+                // Notification handled by onAuthStateChanged listener
             } catch (error) {
                 console.error("Logout error:", error);
                 showCustomModal("Error", "Failed to log out: " + error.message);
+                showNotification("Failed to log out: " + error.message, "error");
             } finally {
                 loadingIndicator.classList.add('hidden');
             }
@@ -2060,6 +2275,10 @@
             // Re-render chart if navigating to home page
             if (pageId === 'homePage') {
                 renderChart(currentHealthData);
+            }
+            // Re-apply filters if navigating to all entries page
+            if (pageId === 'allEntriesPage') {
+                applyFilters();
             }
         }
 
@@ -2264,6 +2483,15 @@
         verificationCodeInput.addEventListener('input', () => authError.style.display = 'none');
         noteInput.addEventListener('input', () => { /* No specific error for notes, but can be added */ });
         usernameInput.addEventListener('input', () => profileMessage.textContent = ''); // Clear profile message on input
+
+        // Filter event listeners
+        applyFiltersButton.addEventListener('click', applyFilters);
+        // Optionally, apply filters on change for a more reactive experience
+        filterStartDate.addEventListener('change', applyFilters);
+        filterEndDate.addEventListener('change', applyFilters);
+        filterTimePeriod.addEventListener('change', applyFilters);
+        filterHighBp.addEventListener('change', applyFilters);
+        filterHighSugar.addEventListener('change', applyFilters);
     </script>
 </body>
 </html>
