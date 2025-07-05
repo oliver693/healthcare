@@ -324,15 +324,7 @@
         .auth-section .button-group button {
             flex: 1;
         }
-        .security-warning {
-            background-color: #fef2f2;
-            color: #ef4444;
-            border: 1px solid #fca5a5;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px; /* Adjusted margin */
-            font-size: 14px;
-        }
+        /* Removed .security-warning as per user request */
         .header-section {
             display: flex;
             justify-content: space-between;
@@ -357,11 +349,11 @@
             padding: 15px;
             display: flex;
             flex-direction: column;
-            position: absolute; /* Changed to absolute for notes within their page */
+            position: fixed; /* Changed to fixed for global movement */
             width: 280px;
             box-sizing: border-box;
             cursor: default;
-            z-index: 101;
+            z-index: 1000; /* High z-index to be on top of all content */
             transform: rotate(calc(var(--rotation) * 1deg)); /* Apply random rotation */
             transition: box-shadow 0.2s ease, transform 0.1s ease; /* Smooth transition for hover/active */
         }
@@ -502,13 +494,13 @@
                 flex-direction: column;
             }
             .draggable-note-box {
-                position: relative; /* Changed to relative for notes within their page on small screens */
-                width: 100%;
+                position: fixed; /* Keep fixed for global movement on small screens too */
+                width: 280px; /* Maintain fixed width for notes */
                 padding: 12px;
                 transform: none !important; /* Remove rotation on small screens */
             }
             .note-delete-button-draggable {
-                width: 100%;
+                width: auto; /* Allow auto width for delete button */
             }
             .logout-button {
                 margin-top: 10px;
@@ -634,11 +626,6 @@
 
     <!-- Main Content Area -->
     <div class="main-content-wrapper">
-        <!-- Security Warning -->
-        <div class="security-warning">
-            <strong>Welcome</strong> Just for quick data entry.
-        </div>
-
         <!-- Authentication Section -->
         <div id="authSection" class="auth-section">
             <h2 id="authTitle" class="text-center">Log in or sign up</h2>
@@ -824,16 +811,13 @@
             </div>
 
             <!-- Notes Page -->
-            <div id="notesPage" class="page-section container relative" style="min-height: 400px;">
+            <div id="notesPage" class="page-section container">
                 <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">My Notes</h2>
                 <div class="input-group mb-4">
                     <label for="noteInput">Add a new note</label>
                     <textarea id="noteInput" class="rounded-lg" rows="4" placeholder="Type your note here..."></textarea>
                 </div>
                 <button id="addNoteButton" class="add-note-button-main">Add Note</button>
-                <div id="draggableNotesContainer" class="mt-8">
-                    <!-- Draggable notes will be appended here by JavaScript -->
-                </div>
             </div>
 
             <!-- User Profile Page -->
@@ -863,6 +847,11 @@
                 </div>
             </div>
         </div>
+    </div>
+
+    <!-- Draggable Notes Container (moved outside page-sections for global visibility) -->
+    <div id="draggableNotesContainer">
+        <!-- Draggable notes will be appended here by JavaScript -->
     </div>
 
     <script type="module">
@@ -931,10 +920,10 @@
         let healthChartInstance = null; // To store the Chart.js instance
 
         // Note elements
-        const notesPage = document.getElementById('notesPage');
+        const notesPage = document.getElementById('notesPage'); // This is now just the input area
         const noteInput = document.getElementById('noteInput');
         const addNoteButton = document.getElementById('addNoteButton');
-        const draggableNotesContainer = document.getElementById('draggableNotesContainer');
+        const draggableNotesContainer = document.getElementById('draggableNotesContainer'); // Moved to global scope
 
         // Modal elements
         const customModal = document.getElementById('customModal');
@@ -1488,11 +1477,15 @@
                 const noteDate = `${year}-${month}-${day}`;
                 const rotation = (Math.random() * 6) - 3; // -3 to +3 degrees
 
+                // Initial random position relative to viewport, considering sidebar width
+                const initialX = 280 + Math.random() * (window.innerWidth - 280 - 300); // 280 for sidebar, 300 for note width
+                const initialY = 20 + Math.random() * (window.innerHeight - 200); // 20 for top margin, approx 200 for note height
+
                 const newNote = {
                     date: noteDate,
                     text: noteText,
                     timestamp: Date.now(),
-                    position: { x: Math.random() * (notesPage.offsetWidth - 300), y: Math.random() * (notesPage.offsetHeight - 200) }, // Random position within notes page
+                    position: { x: initialX, y: initialY },
                     rotation: rotation
                 };
                 await addDoc(notesCollectionRef, newNote);
@@ -1573,14 +1566,13 @@
             noteBox.id = `note-${note.id}`;
             noteBox.className = 'draggable-note-box';
             
-            // Ensure positions are relative to the draggableNotesContainer
-            let posX = typeof note.position?.x === 'number' ? note.position.x : (Math.random() * (draggableNotesContainer.offsetWidth - 280));
-            let posY = typeof note.position?.y === 'number' ? note.position.y : (Math.random() * (draggableNotesContainer.offsetHeight - 150));
+            // Set initial position from data or random
+            let posX = typeof note.position?.x === 'number' ? note.position.x : (280 + Math.random() * (window.innerWidth - 280 - 300));
+            let posY = typeof note.position?.y === 'number' ? note.position.y : (20 + Math.random() * (window.innerHeight - 200));
 
-            // Clamp positions to ensure they are within bounds
-            posX = Math.max(0, Math.min(posX, draggableNotesContainer.offsetWidth - noteBox.offsetWidth));
-            posY = Math.max(0, Math.min(posY, draggableNotesContainer.offsetHeight - noteBox.offsetHeight));
-
+            // Clamp positions to ensure they are within viewport bounds
+            posX = Math.max(0, Math.min(posX, window.innerWidth - 280)); // 280 is approx note width
+            posY = Math.max(0, Math.min(posY, window.innerHeight - 150)); // 150 is approx note height
 
             noteBox.style.left = `${posX}px`;
             noteBox.style.top = `${posY}px`;
@@ -1593,7 +1585,7 @@
                 </div>
                 <p class="draggable-note-text">${note.text}</p>
             `;
-            draggableNotesContainer.appendChild(noteBox);
+            document.body.appendChild(noteBox); // Append to body for global visibility
 
             const header = noteBox.querySelector('.draggable-note-header');
             const deleteButton = noteBox.querySelector('.note-delete-button-draggable');
@@ -1636,19 +1628,9 @@
             let newX = initialElementX + dx;
             let newY = initialElementY + dy;
 
-            // Get the bounding rectangle of the parent container
-            const containerRect = draggableNotesContainer.getBoundingClientRect();
-            
-            // Adjust newX and newY relative to the container's top-left corner
-            // This is important because noteBox.offsetLeft/offsetTop are relative to its offsetParent,
-            // which is draggableNotesContainer, but e.clientX/Y are relative to the viewport.
-            // So we need to calculate the new position relative to the container for saving.
-            const newXRelativeToContainer = newX;
-            const newYRelativeToContainer = newY;
-
-            // Clamp positions to stay within the draggableNotesContainer boundaries
-            const maxX = draggableNotesContainer.offsetWidth - currentDraggable.offsetWidth;
-            const maxY = draggableNotesContainer.offsetHeight - currentDraggable.offsetHeight;
+            // Clamp positions to stay within the viewport boundaries
+            const maxX = window.innerWidth - currentDraggable.offsetWidth;
+            const maxY = window.innerHeight - currentDraggable.offsetHeight;
 
             newX = Math.max(0, Math.min(newX, maxX));
             newY = Math.max(0, Math.min(newY, maxY));
@@ -1667,7 +1649,7 @@
             isDragging = false;
             currentDraggable.classList.remove('dragging');
             currentDraggable.style.cursor = 'grab';
-            currentDraggable.style.zIndex = 101;
+            currentDraggable.style.zIndex = 1000; // Keep high z-index
 
             const noteId = currentDraggable.id.replace('note-', '');
             const newPosition = {
@@ -1687,12 +1669,12 @@
          * @param {Array<Object>} data - An array of note objects.
          */
         function renderNotes(data) {
-            // Remove all draggable notes from the container before re-rendering
-            draggableNotesContainer.innerHTML = '';
+            // Remove all draggable notes from the body before re-rendering
+            document.querySelectorAll('.draggable-note-box').forEach(noteBox => noteBox.remove());
             currentNotesData = data;
 
             if (data.length === 0) {
-                draggableNotesContainer.innerHTML = '<p class="text-center text-gray-500">No notes yet. Add your first note above!</p>';
+                // No need to display a message in draggableNotesContainer as it's for floating notes
                 return;
             }
 
@@ -1989,7 +1971,7 @@
             logoutButton.classList.add('hidden');
             healthDataTableBody.innerHTML = '';
             highValueDataTableBody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-gray-500">No high value entries. Keep up the good work!</td></tr>'; // Clear high value table
-            draggableNotesContainer.innerHTML = ''; // Clear notes
+            document.querySelectorAll('.draggable-note-box').forEach(noteBox => noteBox.remove()); // Remove all floating notes
             phoneVerificationSection.classList.add('hidden');
             emailPasswordSection.classList.add('hidden');
             phoneInputSection.classList.add('hidden');
