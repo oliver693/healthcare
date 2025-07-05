@@ -838,9 +838,9 @@
         // Global variables provided by Canvas environment
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 
-        // Directly use the provided Firebase config
+        // Firebase config: API key is left as an empty string to be injected by the Canvas environment.
         const firebaseConfig = {
-            apiKey: "AIzaSyC02XTgs7KQNEUimubTqBbGFj72DdP3KFI",
+            apiKey: "", // This will be automatically populated by the Canvas environment
             authDomain: "health-tracker-app-ceeef.firebaseapp.com",
             projectId: "health-tracker-app-ceeef",
             storageBucket: "health-tracker-app-ceeef.firebasestorage.app",
