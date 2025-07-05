@@ -583,10 +583,12 @@
             font-size: 0.9em;
         }
 
-        /* Set the chart size to 1cm x 1cm */
+        /* Set the chart size to 350px x 350px */
         #healthChart {
-            width: 1cm;
-            height: 1cm;
+            width: 350px;
+            height: 350px;
+            margin: 0 auto; /* Center the chart */
+            display: block; /* Ensure it behaves as a block element for margin auto */
         }
     </style>
 </head>
@@ -2063,100 +2065,68 @@
          * @param {Array<Object>} data - The health data to visualize.
          */
         function renderChart(data) {
-        if (healthChartInstance) {
-            healthChartInstance.destroy(); // Destroy previous chart instance
-        }
-    
-        if (data.length === 0) {
-            const ctx = healthChartCanvas.getContext('2d');
-            ctx.clearRect(0, 0, healthChartCanvas.width, healthChartCanvas.height);
-            ctx.font = '16px Inter';
-            ctx.fillStyle = '#6b7280';
-            ctx.textAlign = 'center';
-            ctx.fillText('No data to display chart. Add some entries!', healthChartCanvas.width / 2, healthChartCanvas.height / 2);
-            return;
-        }
-    
-        // Aggregate data by time period for average sugar and BP
-        const aggregatedData = data.reduce((acc, entry) => {
-            const timePeriod = entry.timePeriod;
-            if (!acc[timePeriod]) {
-                acc[timePeriod] = { totalSugar: 0, totalSystolic: 0, totalDiastolic: 0, count: 0 };
+            if (healthChartInstance) {
+                healthChartInstance.destroy(); // Destroy previous chart instance
             }
-            acc[timePeriod].totalSugar += entry.sugarLevel;
-            const bpParts = entry.bpLevel.split('/').map(Number);
-            acc[timePeriod].totalSystolic += bpParts[0];
-            acc[timePeriod].totalDiastolic += bpParts[1];
-            acc[timePeriod].count++;
-            return acc;
-        }, {});
-    
-        const labels = Object.keys(aggregatedData).sort((a, b) => {
-            // Custom sort for time periods
-            const order = ['Morning', 'Afternoon', 'Night'];
-            return order.indexOf(a) - order.indexOf(b);
-        });
-        const avgSugarData = labels.map(label => (aggregatedData[label].totalSugar / aggregatedData[label].count).toFixed(1));
-        const avgSystolicBpData = labels.map(label => (aggregatedData[label].totalSystolic / aggregatedData[label].count).toFixed(1));
-        const avgDiastolicBpData = labels.map(label => (aggregatedData[label].totalDiastolic / aggregatedData[label].count).toFixed(1));
-    
-        const ctx = healthChartCanvas.getContext('2d');
-        healthChartInstance = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: labels,
-                datasets: [
-                    {
-                        label: 'Average Sugar Level (mg/dL)',
-                        data: avgSugarData,
-                        backgroundColor: 'rgba(99, 102, 241, 0.6)', // Indigo
-                        borderColor: 'rgba(99, 102, 241, 1)',
-                        borderWidth: 1
-                    },
-                    {
-                        label: 'Average Systolic BP (mmHg)',
-                        data: avgSystolicBpData,
-                        backgroundColor: 'rgba(34, 197, 94, 0.6)', // Green
-                        borderColor: 'rgba(34, 197, 94, 1)',
-                        borderWidth: 1
-                    },
-                    {
-                        label: 'Average Diastolic BP (mmHg)',
-                        data: avgDiastolicBpData,
-                        backgroundColor: 'rgba(249, 115, 22, 0.6)', // Orange
-                        borderColor: 'rgba(249, 115, 22, 1)',
-                        borderWidth: 1
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        max: Math.max(...avgSugarData.concat(avgSystolicBpData).concat(avgDiastolicBpData)) * 1.1, // Set max value to 10% above the highest data point
-                        title: {
-                            display: true,
-                            text: 'Level'
-                        }
-                    },
-                    x: {
-                        title: {
-                            display: true,
-                            text: 'Time Period'
-                        }
-                    }
-                },
-                plugins: {
-                    title: {
-                        display: true,
-                        text: 'Average Health Metrics by Time Period'
-                    }
+
+            if (data.length === 0) {
+                const ctx = healthChartCanvas.getContext('2d');
+                ctx.clearRect(0, 0, healthChartCanvas.width, healthChartCanvas.height);
+                ctx.font = '16px Inter';
+                ctx.fillStyle = '#6b7280';
+                ctx.textAlign = 'center';
+                ctx.fillText('No data to display chart. Add some entries!', healthChartCanvas.width / 2, healthChartCanvas.height / 2);
+                return;
+            }
+
+            // Aggregate data by time period for donut chart
+            const timePeriodCounts = { Morning: 0, Afternoon: 0, Night: 0 };
+            data.forEach(entry => {
+                if (timePeriodCounts.hasOwnProperty(entry.timePeriod)) {
+                    timePeriodCounts[entry.timePeriod]++;
                 }
-            }
-        });
-    }
+            });
+
+            const chartLabels = ['Morning Entries', 'Afternoon Entries', 'Night Entries'];
+            const chartData = [timePeriodCounts.Morning, timePeriodCounts.Afternoon, timePeriodCounts.Night];
+            const backgroundColors = ['#6366f1', '#22c55e', '#f97316']; // Indigo, Green, Orange
+
+            const ctx = healthChartCanvas.getContext('2d');
+            healthChartInstance = new Chart(ctx, {
+                type: 'doughnut', // Changed to doughnut chart
+                data: {
+                    labels: chartLabels,
+                    datasets: [
+                        {
+                            data: chartData,
+                            backgroundColor: backgroundColors,
+                            borderColor: '#ffffff', // White border between segments
+                            borderWidth: 2
+                        }
+                    ]
+                },
+                options: {
+                    responsive: false, // Set to false since we define fixed width/height in CSS
+                    maintainAspectRatio: false, // Important for fixed size canvas
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Health Entries by Time Period'
+                        },
+                        legend: {
+                            display: true,
+                            position: 'bottom', // Position legend at the bottom
+                            labels: {
+                                font: {
+                                    size: 14
+                                }
+                            }
+                        }
+                    },
+                    cutout: '70%', // Creates the donut hole
+                }
+            });
+        }
 
 
         // Event Listeners
