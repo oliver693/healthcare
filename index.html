@@ -84,6 +84,14 @@
             transition: margin-left 0.3s ease;
             width: calc(100% - 250px); /* Adjust width for sidebar */
         }
+        /* New class for centering content */
+        .main-content-wrapper.center-auth {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh; /* Ensure it takes full viewport height for centering */
+            padding: 0; /* Remove padding when centering auth, auth-section has its own padding */
+        }
         .container {
             background-color: #ffffff;
             padding: 30px;
@@ -304,7 +312,7 @@
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); /* More subtle shadow */
             width: 100%;
             max-width: 500px;
-            margin: 20px auto; /* Center auth section */
+            /* Removed margin: 20px auto; as parent will center it */
             text-align: center;
         }
         .auth-section h2 {
@@ -877,6 +885,7 @@
         // Auth elements
         const authSection = document.getElementById('authSection');
         const appContent = document.getElementById('appContent');
+        const mainContentWrapper = document.querySelector('.main-content-wrapper'); // Get the main content wrapper
         const authEmailInput = document.getElementById('authEmail');
         const authPasswordInput = document.getElementById('authPassword');
         const loginButton = document.getElementById('loginButton');
@@ -999,6 +1008,7 @@
                     authSection.classList.remove('hidden');
                     initialAuthOptions.classList.remove('hidden'); // Show initial options
                     loadingIndicator.classList.add('hidden');
+                    mainContentWrapper.classList.add('center-auth'); // Center auth section initially
                 }
 
             } catch (error) {
@@ -1954,6 +1964,7 @@
             document.getElementById('sidebar').classList.remove('hidden'); // Show sidebar
             loggedInUsernameSpan.classList.remove('hidden');
             logoutButton.classList.remove('hidden');
+            mainContentWrapper.classList.remove('center-auth'); // Remove centering for app content
             // Populate current user ID in profile section
             if (loggedInUser) {
                 currentUserIdInput.value = loggedInUser.email || loggedInUser.uid;
@@ -1976,6 +1987,7 @@
             emailPasswordSection.classList.add('hidden');
             phoneInputSection.classList.add('hidden');
             initialAuthOptions.classList.remove('hidden'); // Show initial auth options
+            mainContentWrapper.classList.add('center-auth'); // Add centering for auth section
             // Reset reCAPTCHA if it exists and is not destroyed by Firebase already
             if (window.recaptchaVerifier && window.recaptchaVerifier.reset) {
                 window.recaptchaVerifier.reset();
@@ -2066,12 +2078,23 @@
                     acc[timePeriod] = { totalSugar: 0, totalSystolic: 0, totalDiastolic: 0, count: 0 };
                 }
                 acc[timePeriod].totalSugar += entry.sugarLevel;
-                const bpParts = entry.bpLevel.split('/').map(Number);
-                acc[timePeriod].totalSystolic += bpParts[0];
-                acc[timePeriod].totalDiastolic += bpParts[1];
+                // Ensure bpLevel is valid before splitting
+                if (entry.bpLevel && typeof entry.bpLevel === 'string' && entry.bpLevel.includes('/')) {
+                    const bpParts = entry.bpLevel.split('/').map(Number);
+                    if (!isNaN(bpParts[0]) && !isNaN(bpParts[1])) {
+                        acc[timePeriod].totalSystolic += bpParts[0];
+                        acc[timePeriod].totalDiastolic += bpParts[1];
+                    } else {
+                        console.warn("Invalid BP parts encountered:", entry.bpLevel);
+                    }
+                } else {
+                    console.warn("Invalid BP level format encountered:", entry.bpLevel);
+                }
                 acc[timePeriod].count++;
                 return acc;
             }, {});
+
+            console.log("Aggregated Data for Chart:", aggregatedData); // Debug log
 
             const labels = Object.keys(aggregatedData).sort((a, b) => {
                 // Custom sort for time periods
@@ -2081,6 +2104,11 @@
             const avgSugarData = labels.map(label => (aggregatedData[label].totalSugar / aggregatedData[label].count).toFixed(1));
             const avgSystolicBpData = labels.map(label => (aggregatedData[label].totalSystolic / aggregatedData[label].count).toFixed(1));
             const avgDiastolicBpData = labels.map(label => (aggregatedData[label].totalDiastolic / aggregatedData[label].count).toFixed(1));
+
+            console.log("Chart Labels:", labels); // Debug log
+            console.log("Average Sugar Data:", avgSugarData); // Debug log
+            console.log("Average Systolic BP Data:", avgSystolicBpData); // Debug log
+            console.log("Average Diastolic BP Data:", avgDiastolicBpData); // Debug log
 
             const ctx = healthChartCanvas.getContext('2d');
             healthChartInstance = new Chart(ctx, {
