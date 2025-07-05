@@ -70,7 +70,7 @@
                 grid-template-columns: 1fr 1fr;
             }
         }
-        .add-button, .export-button, .auth-button, .add-note-button-main, .import-button {
+        .add-button, .export-button, .auth-button, .add-note-button-main, .import-button, .profile-button {
             color: white;
             padding: 12px 25px;
             border-radius: 8px;
@@ -147,6 +147,19 @@
         .add-note-button-main:active {
             transform: translateY(0);
             box-shadow: 0 2px 8px rgba(139, 92, 246, 0.3);
+        }
+        .profile-button {
+            background-color: #3b82f6; /* Blue 500 */
+            box-shadow: 0 3px 10px rgba(59, 130, 246, 0.2);
+        }
+        .profile-button:hover {
+            background-color: #2563eb; /* Blue 600 */
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(59, 130, 246, 0.25);
+        }
+        .profile-button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
         }
         .logout-button {
             background-color: #f97316; /* Orange 500 */
@@ -388,7 +401,7 @@
             .action-buttons {
                 grid-template-columns: 1fr;
             }
-            .add-button, .export-button, .add-note-button-main, .import-button {
+            .add-button, .export-button, .add-note-button-main, .import-button, .profile-button {
                 padding: 10px 20px;
                 font-size: 16px;
             }
@@ -502,6 +515,20 @@
         .auth-separator:not(:empty)::after {
             margin-left: .25em;
         }
+
+        /* High value indicators */
+        .high-bp {
+            color: #dc2626; /* Red */
+            font-weight: bold;
+        }
+        .high-sugar {
+            color: #f59e0b; /* Amber */
+            font-weight: bold;
+        }
+        .high-value-table th, .high-value-table td {
+            padding: 8px 15px;
+            font-size: 0.9em;
+        }
     </style>
 </head>
 <body>
@@ -611,38 +638,78 @@
 
             <!-- Main Application Content (hidden until logged in) -->
             <div id="appContent" class="hidden">
+                <!-- User Profile Section -->
+                <div class="container mb-8">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-4">User Profile</h2>
+                    <div class="input-group mb-4">
+                        <label for="currentUserId">Logged in as:</label>
+                        <input type="text" id="currentUserId" class="rounded-lg bg-gray-100 cursor-not-allowed" readonly>
+                    </div>
+                    <div class="input-group mb-4">
+                        <label for="usernameInput">Username:</label>
+                        <input type="text" id="usernameInput" class="rounded-lg" placeholder="Enter your username">
+                    </div>
+                    <button id="updateProfileButton" class="profile-button">Update Profile</button>
+                    <p id="profileMessage" class="text-sm mt-2"></p>
+                </div>
+
                 <!-- Input Form -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 mt-8">
-                    <div class="input-group">
-                        <label for="dateInput">Date</label>
-                        <input type="date" id="dateInput" class="rounded-lg" required>
+                <div class="container mb-8">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-4">Add Health Entry</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 mt-8">
+                        <div class="input-group">
+                            <label for="dateInput">Date</label>
+                            <input type="date" id="dateInput" class="rounded-lg" required>
+                        </div>
+                        <div class="input-group">
+                            <label for="timePeriodSelect">Time Period</label>
+                            <select id="timePeriodSelect" class="rounded-lg" required>
+                                <option value="Morning">Morning</option>
+                                <option value="Afternoon">Afternoon</option>
+                                <option value="Night">Night</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label for="bpLevelInput">BP Level (mmHg)</label>
+                            <input type="text" id="bpLevelInput" class="rounded-lg" placeholder="e.g., 120/80" pattern="^\d{2,3}\/\d{2,3}$" required>
+                            <p id="bpError" class="error-message">Please enter BP in ###/## format (e.g., 120/80).</p>
+                        </div>
+                        <div class="input-group">
+                            <label for="sugarLevelInput">Sugar Level (mg/dL)</label>
+                            <input type="number" id="sugarLevelInput" class="rounded-lg" placeholder="e.g., 90" min="50" required>
+                            <p id="sugarError" class="error-message">Please enter a valid sugar level (min 50).</p>
+                        </div>
                     </div>
-                    <div class="input-group">
-                        <label for="timePeriodSelect">Time Period</label>
-                        <select id="timePeriodSelect" class="rounded-lg" required>
-                            <option value="Morning">Morning</option>
-                            <option value="Afternoon">Afternoon</option>
-                            <option value="Night">Night</option>
-                        </select>
-                    </div>
-                    <div class="input-group">
-                        <label for="bpLevelInput">BP Level (mmHg)</label>
-                        <input type="text" id="bpLevelInput" class="rounded-lg" placeholder="e.g., 120/80" pattern="^\d{2,3}\/\d{2,3}$" required>
-                        <p id="bpError" class="error-message">Please enter BP in ###/## format (e.g., 120/80).</p>
-                    </div>
-                    <div class="input-group">
-                        <label for="sugarLevelInput">Sugar Level (mg/dL)</label>
-                        <input type="number" id="sugarLevelInput" class="rounded-lg" placeholder="e.g., 90" min="50" required>
-                        <p id="sugarError" class="error-message">Please enter a valid sugar level (min 50).</p>
+
+                    <div class="action-buttons">
+                        <button id="addEntryButton" class="add-button">Add Entry</button>
+                        <button id="exportExcelButton" class="export-button">Export to Excel</button>
+                        <input type="file" id="importExcelInput" accept=".xlsx, .xls" class="hidden">
+                        <button id="importExcelButton" class="import-button">Import from Excel</button>
                     </div>
                 </div>
 
-                <div class="action-buttons">
-                    <button id="addEntryButton" class="add-button">Add Entry</button>
-                    <button id="exportExcelButton" class="export-button">Export to Excel</button>
-                    <input type="file" id="importExcelInput" accept=".xlsx, .xls" class="hidden">
-                    <button id="importExcelButton" class="import-button">Import from Excel</button>
+                <!-- High Value Recordings Section -->
+                <div class="container mb-8">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-4">High Value Recordings</h2>
+                    <div class="overflow-x-auto">
+                        <table id="highValueDataTable" class="high-value-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Time Period</th>
+                                    <th>BP Level</th>
+                                    <th>Sugar Level</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- High value data rows will be inserted here by JavaScript -->
+                                <tr><td colspan="4" class="text-center py-4 text-gray-500">No high value entries. Keep up the good work!</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
+
 
                 <!-- Loading Indicator -->
                 <div id="loadingIndicator" class="loading-indicator hidden">
@@ -650,21 +717,24 @@
                 </div>
 
                 <!-- Data Table -->
-                <div class="overflow-x-auto">
-                    <table id="healthDataTable">
-                        <thead>
-                            <tr>
-                                <th>Date</th>
-                                <th>Time Period</th>
-                                <th>BP Level</th>
-                                <th>Sugar Level</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <!-- Data rows will be inserted here by JavaScript -->
-                        </tbody>
-                    </table>
+                <div class="container">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-4">All Health Entries</h2>
+                    <div class="overflow-x-auto">
+                        <table id="healthDataTable">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Time Period</th>
+                                    <th>BP Level</th>
+                                    <th>Sugar Level</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Data rows will be inserted here by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
 
@@ -686,7 +756,7 @@
         // Import Firebase modules
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, PhoneAuthProvider, RecaptchaVerifier, signInWithCredential, PhoneAuthCredential } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, doc, updateDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, doc, updateDoc, deleteDoc, onSnapshot, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // Get DOM elements
         const dateInput = document.getElementById('dateInput');
@@ -695,8 +765,8 @@
         const sugarLevelInput = document.getElementById('sugarLevelInput');
         const addEntryButton = document.getElementById('addEntryButton');
         const exportExcelButton = document.getElementById('exportExcelButton');
-        const importExcelButton = document.getElementById('importExcelButton'); // New: Import button
-        const importExcelInput = document.getElementById('importExcelInput'); // New: Hidden file input
+        const importExcelButton = document.getElementById('importExcelButton');
+        const importExcelInput = document.getElementById('importExcelInput');
         const healthDataTableBody = document.querySelector('#healthDataTable tbody');
         const bpError = document.getElementById('bpError');
         const sugarError = document.getElementById('sugarError');
@@ -714,8 +784,8 @@
         const loggedInUsernameSpan = document.getElementById('loggedInUsername');
         const logoutButton = document.getElementById('logoutButton');
 
-        // New Auth elements for Google and Phone
-        const initialAuthOptions = document.getElementById('initialAuthOptions'); // New: Container for initial buttons
+        // Auth UI sections
+        const initialAuthOptions = document.getElementById('initialAuthOptions');
         const googleSignInButton = document.getElementById('googleSignInButton');
         const emailAuthButton = document.getElementById('emailAuthButton');
         const phoneAuthButton = document.getElementById('phoneAuthButton');
@@ -730,6 +800,15 @@
         const backToOptionsPhoneLink = document.getElementById('backToOptionsPhone');
         const backToPhoneInputLink = document.getElementById('backToPhoneInput');
         const resendCodeLink = document.getElementById('resendCodeLink');
+
+        // User Profile elements
+        const currentUserIdInput = document.getElementById('currentUserId');
+        const usernameInput = document.getElementById('usernameInput');
+        const updateProfileButton = document.getElementById('updateProfileButton');
+        const profileMessage = document.getElementById('profileMessage');
+
+        // High Value Recordings elements
+        const highValueDataTableBody = document.querySelector('#highValueDataTable tbody');
 
 
         // Note elements
@@ -754,6 +833,7 @@
         // Data arrays (will be populated from Firestore via snapshots)
         let currentHealthData = [];
         let currentNotesData = [];
+        let currentUserProfile = null; // Store user profile data
 
         // Global variables provided by Canvas environment
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
@@ -769,6 +849,10 @@
             measurementId: "G-1B6GYHBYEK"
         };
 
+        // Define high value thresholds
+        const HIGH_BP_SYSTOLIC = 140; // Systolic BP (top number)
+        const HIGH_BP_DIASTOLIC = 90; // Diastolic BP (bottom number)
+        const HIGH_SUGAR_LEVEL = 180; // mg/dL (post-meal for general tracking)
 
         /**
          * Initializes Firebase and sets up auth state listener.
@@ -784,7 +868,12 @@
                     if (user) {
                         loggedInUser = user;
                         console.log("Firebase Auth State Changed: Logged in as", user.email || user.uid);
-                        loggedInUsernameSpan.textContent = `Logged in as: ${user.email || user.uid}`;
+                        currentUserIdInput.value = user.email || user.uid; // Display email or UID
+
+                        // Load user profile
+                        await loadUserProfile(user.uid);
+                        updateLoggedInUsernameDisplay();
+
                         showAppContent();
                         await setupRealtimeListeners(); // Setup listeners after user is logged in
                     } else {
@@ -810,6 +899,71 @@
         }
 
         /**
+         * Loads the user's profile from Firestore.
+         * @param {string} userId - The UID of the current user.
+         */
+        async function loadUserProfile(userId) {
+            if (!db || !userId) return;
+            try {
+                const userProfileRef = doc(db, `artifacts/${appId}/users/${userId}/profile`, 'userProfile');
+                const docSnap = await getDoc(userProfileRef);
+                if (docSnap.exists()) {
+                    currentUserProfile = docSnap.data();
+                    usernameInput.value = currentUserProfile.username || '';
+                    console.log("User profile loaded:", currentUserProfile);
+                } else {
+                    currentUserProfile = { username: '' }; // Initialize empty profile if not exists
+                    usernameInput.value = '';
+                    console.log("No user profile found, initializing empty.");
+                }
+            } catch (error) {
+                console.error("Error loading user profile:", error);
+                profileMessage.textContent = "Error loading profile.";
+                profileMessage.style.color = '#ef4444';
+            }
+        }
+
+        /**
+         * Updates the user's profile in Firestore.
+         */
+        async function updateUserProfile() {
+            if (!loggedInUser || !db) {
+                showCustomModal("Login Required", "Please log in to update your profile.");
+                return;
+            }
+            loadingIndicator.classList.remove('hidden');
+            profileMessage.textContent = ''; // Clear previous messages
+            try {
+                const userId = loggedInUser.uid;
+                const userProfileRef = doc(db, `artifacts/${appId}/users/${userId}/profile`, 'userProfile');
+                const newUsername = usernameInput.value.trim();
+
+                await setDoc(userProfileRef, { username: newUsername }, { merge: true });
+                currentUserProfile = { ...currentUserProfile, username: newUsername };
+                updateLoggedInUsernameDisplay();
+                profileMessage.textContent = "Profile updated successfully!";
+                profileMessage.style.color = '#22c55e';
+            } catch (error) {
+                console.error("Error updating user profile:", error);
+                profileMessage.textContent = "Failed to update profile: " + error.message;
+                profileMessage.style.color = '#ef4444';
+            } finally {
+                loadingIndicator.classList.add('hidden');
+            }
+        }
+
+        /**
+         * Updates the username displayed in the header.
+         */
+        function updateLoggedInUsernameDisplay() {
+            if (loggedInUser) {
+                loggedInUsernameSpan.textContent = `Logged in as: ${currentUserProfile?.username || loggedInUser.email || loggedInUser.uid}`;
+            } else {
+                loggedInUsernameSpan.textContent = '';
+            }
+        }
+
+        /**
          * Sets up real-time listeners for health data and notes.
          */
         async function setupRealtimeListeners() {
@@ -830,6 +984,7 @@
                 });
                 currentHealthData = data;
                 renderHealthData(currentHealthData);
+                renderHighValueData(currentHealthData); // Render high value data as well
                 console.log("Health data updated from Firestore:", currentHealthData);
             }, (error) => {
                 console.error("Error listening to health data:", error);
@@ -1003,11 +1158,18 @@
 
             data.forEach(entry => {
                 const row = healthDataTableBody.insertRow();
+                const bpParts = entry.bpLevel.split('/').map(Number);
+                const isHighBp = bpParts[0] > HIGH_BP_SYSTOLIC || bpParts[1] > HIGH_BP_DIASTOLIC;
+                const isHighSugar = entry.sugarLevel > HIGH_SUGAR_LEVEL;
+
+                const bpClass = isHighBp ? 'high-bp' : '';
+                const sugarClass = isHighSugar ? 'high-sugar' : '';
+
                 row.innerHTML = `
                     <td>${entry.date}</td>
                     <td>${entry.timePeriod}</td>
-                    <td>${entry.bpLevel}</td>
-                    <td>${entry.sugarLevel}</td>
+                    <td class="${bpClass}">${entry.bpLevel}</td>
+                    <td class="${sugarClass}">${entry.sugarLevel}</td>
                     <td>
                         <button class="delete-button" data-id="${entry.id}">Delete</button>
                     </td>
@@ -1021,6 +1183,45 @@
                 };
             });
         }
+
+        /**
+         * Renders only the high-value health data in a separate table.
+         * @param {Array<Object>} data - An array of all health entry objects.
+         */
+        function renderHighValueData(data) {
+            highValueDataTableBody.innerHTML = '';
+            const highValueEntries = data.filter(entry => {
+                const bpParts = entry.bpLevel.split('/').map(Number);
+                const isHighBp = bpParts[0] > HIGH_BP_SYSTOLIC || bpParts[1] > HIGH_BP_DIASTOLIC;
+                const isHighSugar = entry.sugarLevel > HIGH_SUGAR_LEVEL;
+                return isHighBp || isHighSugar;
+            });
+
+            if (highValueEntries.length === 0) {
+                highValueDataTableBody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-gray-500">No high value entries. Keep up the good work!</td></tr>';
+                return;
+            }
+
+            highValueEntries.sort((a, b) => b.timestamp - a.timestamp); // Sort by timestamp descending
+
+            highValueEntries.forEach(entry => {
+                const row = highValueDataTableBody.insertRow();
+                const bpParts = entry.bpLevel.split('/').map(Number);
+                const isHighBp = bpParts[0] > HIGH_BP_SYSTOLIC || bpParts[1] > HIGH_BP_DIASTOLIC;
+                const isHighSugar = entry.sugarLevel > HIGH_SUGAR_LEVEL;
+
+                const bpClass = isHighBp ? 'high-bp' : '';
+                const sugarClass = isHighSugar ? 'high-sugar' : '';
+
+                row.innerHTML = `
+                    <td>${entry.date}</td>
+                    <td>${entry.timePeriod}</td>
+                    <td class="${bpClass}">${entry.bpLevel}</td>
+                    <td class="${sugarClass}">${entry.sugarLevel}</td>
+                `;
+            });
+        }
+
 
         /**
          * Exports the current health data to an Excel (.xlsx) file.
@@ -1630,6 +1831,10 @@
             loggedInUsernameSpan.classList.remove('hidden');
             logoutButton.classList.remove('hidden');
             notesContainer.classList.remove('hidden');
+            // Populate current user ID in profile section
+            if (loggedInUser) {
+                currentUserIdInput.value = loggedInUser.email || loggedInUser.uid;
+            }
         }
 
         /**
@@ -1642,6 +1847,7 @@
             logoutButton.classList.add('hidden');
             notesContainer.classList.add('hidden');
             healthDataTableBody.innerHTML = '';
+            highValueDataTableBody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-gray-500">No high value entries. Keep up the good work!</td></tr>'; // Clear high value table
             document.querySelectorAll('.draggable-note-box').forEach(noteBox => noteBox.remove());
             phoneVerificationSection.classList.add('hidden');
             emailPasswordSection.classList.add('hidden');
@@ -1689,6 +1895,7 @@
         importExcelButton.addEventListener('click', () => importExcelInput.click()); // Trigger hidden file input click
         importExcelInput.addEventListener('change', importFromExcel); // Listen for file selection
         addNoteButton.addEventListener('click', addNote);
+        updateProfileButton.addEventListener('click', updateUserProfile); // New: Update profile button listener
 
         // Auth event listeners
         loginButton.addEventListener('click', () => {
@@ -1779,6 +1986,7 @@
         phoneNumberInput.addEventListener('input', () => authError.style.display = 'none');
         verificationCodeInput.addEventListener('input', () => authError.style.display = 'none');
         noteInput.addEventListener('input', () => { /* No specific error for notes, but can be added */ });
+        usernameInput.addEventListener('input', () => profileMessage.textContent = ''); // Clear profile message on input
     </script>
 </body>
 </html>
