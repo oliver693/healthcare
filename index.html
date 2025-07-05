@@ -2063,116 +2063,100 @@
          * @param {Array<Object>} data - The health data to visualize.
          */
         function renderChart(data) {
-            if (healthChartInstance) {
-                healthChartInstance.destroy(); // Destroy previous chart instance
-            }
-
-            if (data.length === 0) {
-                const ctx = healthChartCanvas.getContext('2d');
-                ctx.clearRect(0, 0, healthChartCanvas.width, healthChartCanvas.height);
-                ctx.font = '16px Inter';
-                ctx.fillStyle = '#6b7280';
-                ctx.textAlign = 'center';
-                ctx.fillText('No data to display chart. Add some entries!', healthChartCanvas.width / 2, healthChartCanvas.height / 2);
-                return;
-            }
-
-            // Aggregate data by time period for average sugar and BP
-            const aggregatedData = data.reduce((acc, entry) => {
-                const timePeriod = entry.timePeriod;
-                if (!acc[timePeriod]) {
-                    acc[timePeriod] = { totalSugar: 0, totalSystolic: 0, totalDiastolic: 0, count: 0 };
-                }
-                acc[timePeriod].totalSugar += entry.sugarLevel;
-                // Ensure bpLevel is valid before splitting
-                if (entry.bpLevel && typeof entry.bpLevel === 'string' && entry.bpLevel.includes('/')) {
-                    const bpParts = entry.bpLevel.split('/').map(Number);
-                    if (!isNaN(bpParts[0]) && !isNaN(bpParts[1])) {
-                        acc[timePeriod].totalSystolic += bpParts[0];
-                        acc[timePeriod].totalDiastolic += bpParts[1];
-                    } else {
-                        console.warn("Invalid BP parts encountered:", entry.bpLevel);
-                    }
-                } else {
-                    console.warn("Invalid BP level format encountered:", entry.bpLevel);
-                }
-                acc[timePeriod].count++;
-                return acc;
-            }, {});
-
-            console.log("Aggregated Data for Chart:", aggregatedData); // Debug log
-
-            const labels = Object.keys(aggregatedData).sort((a, b) => {
-                // Custom sort for time periods
-                const order = ['Morning', 'Afternoon', 'Night'];
-                return order.indexOf(a) - order.indexOf(b);
-            });
-            const avgSugarData = labels.map(label => (aggregatedData[label].totalSugar / aggregatedData[label].count).toFixed(1));
-            const avgSystolicBpData = labels.map(label => (aggregatedData[label].totalSystolic / aggregatedData[label].count).toFixed(1));
-            const avgDiastolicBpData = labels.map(label => (aggregatedData[label].totalDiastolic / aggregatedData[label].count).toFixed(1));
-
-            console.log("Chart Labels:", labels); // Debug log
-            console.log("Average Sugar Data:", avgSugarData); // Debug log
-            console.log("Average Systolic BP Data:", avgSystolicBpData); // Debug log
-            console.log("Average Diastolic BP Data:", avgDiastolicBpData); // Debug log
-
+        if (healthChartInstance) {
+            healthChartInstance.destroy(); // Destroy previous chart instance
+        }
+    
+        if (data.length === 0) {
             const ctx = healthChartCanvas.getContext('2d');
-            healthChartInstance = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [
-                        {
-                            label: 'Average Sugar Level (mg/dL)',
-                            data: avgSugarData,
-                            backgroundColor: 'rgba(99, 102, 241, 0.6)', // Indigo
-                            borderColor: 'rgba(99, 102, 241, 1)',
-                            borderWidth: 1
-                        },
-                        {
-                            label: 'Average Systolic BP (mmHg)',
-                            data: avgSystolicBpData,
-                            backgroundColor: 'rgba(34, 197, 94, 0.6)', // Green
-                            borderColor: 'rgba(34, 197, 94, 1)',
-                            borderWidth: 1
-                        },
-                        {
-                            label: 'Average Diastolic BP (mmHg)',
-                            data: avgDiastolicBpData,
-                            backgroundColor: 'rgba(249, 115, 22, 0.6)', // Orange
-                            borderColor: 'rgba(249, 115, 22, 1)',
-                            borderWidth: 1
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            max: 200, // Set max value for y-axis
-                            title: {
-                                display: true,
-                                text: 'Level'
-                            }
-                        },
-                        x: {
-                            title: {
-                                display: true,
-                                text: 'Time Period'
-                            }
-                        }
+            ctx.clearRect(0, 0, healthChartCanvas.width, healthChartCanvas.height);
+            ctx.font = '16px Inter';
+            ctx.fillStyle = '#6b7280';
+            ctx.textAlign = 'center';
+            ctx.fillText('No data to display chart. Add some entries!', healthChartCanvas.width / 2, healthChartCanvas.height / 2);
+            return;
+        }
+    
+        // Aggregate data by time period for average sugar and BP
+        const aggregatedData = data.reduce((acc, entry) => {
+            const timePeriod = entry.timePeriod;
+            if (!acc[timePeriod]) {
+                acc[timePeriod] = { totalSugar: 0, totalSystolic: 0, totalDiastolic: 0, count: 0 };
+            }
+            acc[timePeriod].totalSugar += entry.sugarLevel;
+            const bpParts = entry.bpLevel.split('/').map(Number);
+            acc[timePeriod].totalSystolic += bpParts[0];
+            acc[timePeriod].totalDiastolic += bpParts[1];
+            acc[timePeriod].count++;
+            return acc;
+        }, {});
+    
+        const labels = Object.keys(aggregatedData).sort((a, b) => {
+            // Custom sort for time periods
+            const order = ['Morning', 'Afternoon', 'Night'];
+            return order.indexOf(a) - order.indexOf(b);
+        });
+        const avgSugarData = labels.map(label => (aggregatedData[label].totalSugar / aggregatedData[label].count).toFixed(1));
+        const avgSystolicBpData = labels.map(label => (aggregatedData[label].totalSystolic / aggregatedData[label].count).toFixed(1));
+        const avgDiastolicBpData = labels.map(label => (aggregatedData[label].totalDiastolic / aggregatedData[label].count).toFixed(1));
+    
+        const ctx = healthChartCanvas.getContext('2d');
+        healthChartInstance = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Average Sugar Level (mg/dL)',
+                        data: avgSugarData,
+                        backgroundColor: 'rgba(99, 102, 241, 0.6)', // Indigo
+                        borderColor: 'rgba(99, 102, 241, 1)',
+                        borderWidth: 1
                     },
-                    plugins: {
+                    {
+                        label: 'Average Systolic BP (mmHg)',
+                        data: avgSystolicBpData,
+                        backgroundColor: 'rgba(34, 197, 94, 0.6)', // Green
+                        borderColor: 'rgba(34, 197, 94, 1)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Average Diastolic BP (mmHg)',
+                        data: avgDiastolicBpData,
+                        backgroundColor: 'rgba(249, 115, 22, 0.6)', // Orange
+                        borderColor: 'rgba(249, 115, 22, 1)',
+                        borderWidth: 1
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: Math.max(...avgSugarData.concat(avgSystolicBpData).concat(avgDiastolicBpData)) * 1.1, // Set max value to 10% above the highest data point
                         title: {
                             display: true,
-                            text: 'Average Health Metrics by Time Period'
+                            text: 'Level'
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Time Period'
                         }
                     }
+                },
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Average Health Metrics by Time Period'
+                    }
                 }
-            });
-        }
+            }
+        });
+    }
 
 
         // Event Listeners
