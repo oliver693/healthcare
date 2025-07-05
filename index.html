@@ -583,11 +583,11 @@
             font-size: 0.9em;
         }
 
-        /* Removed 1x1cm sizing for healthChart to allow w-full h-96 to take effect */
-        /* #healthChart {
+        /* Set the chart size to 1cm x 1cm */
+        #healthChart {
             width: 1cm;
             height: 1cm;
-        } */
+        }
     </style>
 </head>
 <body>
@@ -744,7 +744,7 @@
                     </div>
                 </div>
                 <h3 class="text-xl font-bold text-gray-800 mb-4">Health Trends</h3>
-                <canvas id="healthChart" class="w-full h-96"></canvas>
+                <canvas id="healthChart"></canvas>
             </div>
 
             <!-- Add Health Entry Page -->
