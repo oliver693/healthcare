@@ -70,7 +70,7 @@
                 grid-template-columns: 1fr 1fr;
             }
         }
-        .add-button, .export-button, .auth-button, .add-note-button-main {
+        .add-button, .export-button, .auth-button, .add-note-button-main, .import-button {
             color: white;
             padding: 12px 25px;
             border-radius: 8px;
@@ -107,6 +107,19 @@
         .export-button:active {
             transform: translateY(0);
             box-shadow: 0 2px 8px rgba(34, 197, 94, 0.3);
+        }
+        .import-button {
+            background-color: #f97316; /* Orange 500 */
+            box-shadow: 0 3px 10px rgba(249, 115, 22, 0.2);
+        }
+        .import-button:hover {
+            background-color: #ea580c; /* Orange 600 */
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(249, 115, 22, 0.25);
+        }
+        .import-button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 8px rgba(249, 115, 22, 0.3);
         }
         .auth-button {
             background-color: #0ea5e9; /* Sky 500 */
@@ -375,7 +388,7 @@
             .action-buttons {
                 grid-template-columns: 1fr;
             }
-            .add-button, .export-button, .add-note-button-main {
+            .add-button, .export-button, .add-note-button-main, .import-button {
                 padding: 10px 20px;
                 font-size: 16px;
             }
@@ -435,6 +448,60 @@
                 width: 100%;
             }
         }
+        /* New styles for streamlined auth buttons */
+        .auth-option-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 12px 20px;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+            background-color: #ffffff;
+            color: #333;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            width: 100%;
+        }
+        .auth-option-button:hover {
+            background-color: #f9fafb;
+            border-color: #d1d5db;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+        }
+        .auth-option-button svg {
+            width: 20px;
+            height: 20px;
+        }
+        .auth-option-button.google-btn svg {
+            color: #ea4335; /* Google red */
+        }
+        .auth-option-button.email-btn svg {
+            color: #6366f1; /* Indigo */
+        }
+        .auth-option-button.phone-btn svg {
+            color: #22c55e; /* Green */
+        }
+        .auth-separator {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            margin: 20px 0;
+            color: #9ca3af;
+        }
+        .auth-separator::before,
+        .auth-separator::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .auth-separator:not(:empty)::before {
+            margin-right: .25em;
+        }
+        .auth-separator:not(:empty)::after {
+            margin-left: .25em;
+        }
     </style>
 </head>
 <body>
@@ -446,7 +513,6 @@
             <textarea id="noteInput" class="rounded-lg" rows="4" placeholder="Type your note here..."></textarea>
         </div>
         <button id="addNoteButton" class="add-note-button-main">Add Note</button>
-        <!-- notesDisplay is removed from here, notes are appended directly to body -->
     </div>
 
     <div class="main-content-wrapper">
@@ -466,23 +532,81 @@
 
             <!-- Authentication Section -->
             <div id="authSection" class="auth-section">
-                <h2 id="authTitle">Register</h2> <!-- Default to Register -->
-                <div class="input-group">
-                    <label for="authUsername">Username</label>
-                    <input type="text" id="authUsername" class="rounded-lg" required>
-                </div>
-                <div class="input-group">
-                    <label for="authPassword">Password</label>
-                    <input type="password" id="authPassword" class="rounded-lg" required>
-                </div>
-                <p id="authError" class="error-message text-left"></p>
-                <div class="button-group">
-                    <button id="loginButton" class="auth-button hidden">Login</button> <!-- Login hidden by default -->
-                    <button id="registerButton" class="auth-button">Register</button> <!-- Register visible by default -->
-                </div>
-                <p class="mt-4 text-sm text-gray-600">
-                    <a href="#" id="toggleAuthMode" class="text-indigo-600 hover:underline">Already have an account? Login here.</a>
+                <h2 id="authTitle" class="text-center">Log in or sign up</h2>
+                <p class="text-gray-600 text-sm mb-6 text-center">
+                    Use your email or another service to continue with Health Tracker!
                 </p>
+
+                <!-- Initial Auth Options -->
+                <div id="initialAuthOptions" class="flex flex-col gap-3">
+                    <button id="googleSignInButton" class="auth-option-button google-btn">
+                        <svg viewBox="0 0 48 48" width="20px" height="20px"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.63-6.63C34.7 2.1 29.79 0 24 0 14.53 0 6.4 5.2 2.84 12.71l7.53 5.85C13.23 11.69 18.23 9.5 24 9.5z"/><path fill="#34A853" d="M46.8 24c0-1.56-.14-3.09-.39-4.59L40.06 19l-4.54 3.51c.05.3.08.6.08.9 0 4.42-3.58 8-8 8s-8-3.58-8-8c0-.9.16-1.77.44-2.6L19.4 17.5l-4.7 3.63c-1.07 1.48-1.7 3.25-1.7 5.12 0 7.48 6.02 13.5 13.5 13.5s13.5-6.02 13.5-13.5z"/><path fill="#4285F4" d="M24 48c6.48 0 11.93-3.66 14.15-9.04l-7.23-5.63c-1.38 3.51-4.72 6.04-8.92 6.04-6.63 0-12.04-5.37-12.04-12 0-1.87.43-3.64 1.16-5.22L2.84 12.71C1.03 16.22 0 20.06 0 24c0 10.47 8.53 19 19 19 2.91 0 5.67-.67 8.1-1.85z"/><path fill="#FBBC04" d="M46.8 24c0 .7-.06 1.39-.18 2.07L48 27.93V24h-1.2z"/></svg>
+                        Continue with Google
+                    </button>
+                    <button id="emailAuthButton" class="auth-option-button email-btn">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+                        </svg>
+                        Continue with email
+                    </button>
+                     <button id="phoneAuthButton" class="auth-option-button phone-btn">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1C10.03 21 3 13.97 3 5c0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.46.57 3.57.11.35.02.75-.24 1.02l-2.2 2.2z"/>
+                        </svg>
+                        Log in with mobile
+                    </button>
+                </div>
+
+                <!-- Email/Password Section -->
+                <div id="emailPasswordSection" class="hidden mt-6">
+                    <div class="auth-separator">Or</div>
+                    <div class="input-group mt-4">
+                        <label for="authEmail">Email</label>
+                        <input type="email" id="authEmail" class="rounded-lg" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="authPassword">Password</label>
+                        <input type="password" id="authPassword" class="rounded-lg" required>
+                    </div>
+                    <p id="authError" class="error-message text-left"></p>
+                    <div class="button-group">
+                        <button id="loginButton" class="auth-button">Login</button>
+                        <button id="registerButton" class="auth-button">Register</button>
+                    </div>
+                    <p class="mt-4 text-sm text-gray-600">
+                        <a href="#" id="backToOptions" class="text-indigo-600 hover:underline">Back to other login options</a>
+                    </p>
+                </div>
+
+                <!-- Phone Input Section -->
+                <div id="phoneInputSection" class="hidden mt-6">
+                    <div class="auth-separator">Enter your phone number</div>
+                    <div class="input-group mt-4">
+                        <label for="phoneNumberInput" class="text-gray-700">Phone Number</label>
+                        <input type="tel" id="phoneNumberInput" class="rounded-lg" placeholder="+1234567890">
+                    </div>
+                    <button id="sendSmsButton" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors duration-200 w-full">Send SMS Code</button>
+                    <div id="recaptcha-container" class="mt-4 flex justify-center"></div>
+                    <p class="mt-4 text-sm text-gray-600">
+                        <a href="#" id="backToOptionsPhone" class="text-indigo-600 hover:underline">Back to other login options</a>
+                    </p>
+                </div>
+
+                <!-- Phone Verification Section -->
+                <div id="phoneVerificationSection" class="hidden mt-6">
+                    <div class="auth-separator">Verify your phone number</div>
+                    <div class="input-group mt-2">
+                        <label for="verificationCodeInput" class="text-gray-700">Verification Code</label>
+                        <input type="text" id="verificationCodeInput" class="rounded-lg" placeholder="Enter 6-digit code">
+                    </div>
+                    <button id="verifyCodeButton" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors duration-200 w-full">Verify Code</button>
+                    <p class="mt-4 text-sm text-gray-600">
+                        <a href="#" id="resendCodeLink" class="text-indigo-600 hover:underline">Resend code</a>
+                    </p>
+                    <p class="mt-4 text-sm text-gray-600">
+                        <a href="#" id="backToPhoneInput" class="text-indigo-600 hover:underline">Change phone number</a>
+                    </p>
+                </div>
             </div>
 
             <!-- Main Application Content (hidden until logged in) -->
@@ -516,9 +640,11 @@
                 <div class="action-buttons">
                     <button id="addEntryButton" class="add-button">Add Entry</button>
                     <button id="exportExcelButton" class="export-button">Export to Excel</button>
+                    <input type="file" id="importExcelInput" accept=".xlsx, .xls" class="hidden">
+                    <button id="importExcelButton" class="import-button">Import from Excel</button>
                 </div>
 
-                <!-- Loading Indicator (still present but not used in localStorage version) -->
+                <!-- Loading Indicator -->
                 <div id="loadingIndicator" class="loading-indicator hidden">
                     Loading data...
                 </div>
@@ -556,7 +682,12 @@
         </div>
     </div>
 
-    <script>
+    <script type="module">
+        // Import Firebase modules
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, PhoneAuthProvider, RecaptchaVerifier, signInWithCredential, PhoneAuthCredential } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, doc, updateDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
         // Get DOM elements
         const dateInput = document.getElementById('dateInput');
         const timePeriodSelect = document.getElementById('timePeriodSelect');
@@ -564,6 +695,8 @@
         const sugarLevelInput = document.getElementById('sugarLevelInput');
         const addEntryButton = document.getElementById('addEntryButton');
         const exportExcelButton = document.getElementById('exportExcelButton');
+        const importExcelButton = document.getElementById('importExcelButton'); // New: Import button
+        const importExcelInput = document.getElementById('importExcelInput'); // New: Hidden file input
         const healthDataTableBody = document.querySelector('#healthDataTable tbody');
         const bpError = document.getElementById('bpError');
         const sugarError = document.getElementById('sugarError');
@@ -572,23 +705,37 @@
         // Auth elements
         const authSection = document.getElementById('authSection');
         const appContent = document.getElementById('appContent');
-        const authUsernameInput = document.getElementById('authUsername');
+        const authEmailInput = document.getElementById('authEmail');
         const authPasswordInput = document.getElementById('authPassword');
         const loginButton = document.getElementById('loginButton');
         const registerButton = document.getElementById('registerButton');
         const authTitle = document.getElementById('authTitle');
-        const toggleAuthModeLink = document.getElementById('toggleAuthMode');
         const authError = document.getElementById('authError');
         const loggedInUsernameSpan = document.getElementById('loggedInUsername');
         const logoutButton = document.getElementById('logoutButton');
-        const userInfoDiv = document.getElementById('userInfo');
+
+        // New Auth elements for Google and Phone
+        const initialAuthOptions = document.getElementById('initialAuthOptions'); // New: Container for initial buttons
+        const googleSignInButton = document.getElementById('googleSignInButton');
+        const emailAuthButton = document.getElementById('emailAuthButton');
+        const phoneAuthButton = document.getElementById('phoneAuthButton');
+        const emailPasswordSection = document.getElementById('emailPasswordSection');
+        const phoneInputSection = document.getElementById('phoneInputSection');
+        const sendSmsButton = document.getElementById('sendSmsButton');
+        const recaptchaContainer = document.getElementById('recaptcha-container');
+        const phoneVerificationSection = document.getElementById('phoneVerificationSection');
+        const verificationCodeInput = document.getElementById('verificationCodeInput');
+        const verifyCodeButton = document.getElementById('verifyCodeButton');
+        const backToOptionsLink = document.getElementById('backToOptions');
+        const backToOptionsPhoneLink = document.getElementById('backToOptionsPhone');
+        const backToPhoneInputLink = document.getElementById('backToPhoneInput');
+        const resendCodeLink = document.getElementById('resendCodeLink');
+
 
         // Note elements
-        const notesContainer = document.getElementById('notesContainer'); // Container for notes input
+        const notesContainer = document.getElementById('notesContainer');
         const noteInput = document.getElementById('noteInput');
         const addNoteButton = document.getElementById('addNoteButton');
-        // notesDisplay is no longer needed as notes are appended directly to body
-
 
         // Modal elements
         const customModal = document.getElementById('customModal');
@@ -597,19 +744,114 @@
         const modalConfirmButton = document.getElementById('modalConfirmButton');
         const modalCloseButton = document.getElementById('modalCloseButton');
 
-        const LOCAL_STORAGE_USERS_KEY = 'healthTrackerUsers';
-        const LOCAL_STORAGE_CURRENT_USER_KEY = 'healthTrackerCurrentUser';
-        let currentHealthData = []; // Store current health data for export
-        let currentNotesData = []; // Store current notes data for display and export
-        let loggedInUser = null; // Store the currently logged-in username
+        // Firebase variables
+        let firebaseApp = null;
+        let db = null;
+        let auth = null;
+        let loggedInUser = null; // Firebase User object
+        let confirmationResult = null; // Used for phone authentication
 
-        // Dragging variables for notes
-        let isDragging = false;
-        let currentDraggable = null;
-        let initialMouseX;
-        let initialMouseY;
-        let initialElementX;
-        let initialElementY;
+        // Data arrays (will be populated from Firestore via snapshots)
+        let currentHealthData = [];
+        let currentNotesData = [];
+
+        // Global variables provided by Canvas environment
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+
+        // Directly use the provided Firebase config
+        const firebaseConfig = {
+            apiKey: "AIzaSyC02XTgs7KQNEUimubTqBbGFj72DdP3KFI",
+            authDomain: "health-tracker-app-ceeef.firebaseapp.com",
+            projectId: "health-tracker-app-ceeef",
+            storageBucket: "health-tracker-app-ceeef.firebasestorage.app",
+            messagingSenderId: "1077396552131",
+            appId: "1:1077396552131:web:f001b61432b9ccae0b2576",
+            measurementId: "G-1B6GYHBYEK"
+        };
+
+
+        /**
+         * Initializes Firebase and sets up auth state listener.
+         */
+        async function initializeFirebase() {
+            try {
+                firebaseApp = initializeApp(firebaseConfig);
+                auth = getAuth(firebaseApp);
+                db = getFirestore(firebaseApp);
+
+                // Listen for authentication state changes
+                onAuthStateChanged(auth, async (user) => {
+                    if (user) {
+                        loggedInUser = user;
+                        console.log("Firebase Auth State Changed: Logged in as", user.email || user.uid);
+                        loggedInUsernameSpan.textContent = `Logged in as: ${user.email || user.uid}`;
+                        showAppContent();
+                        await setupRealtimeListeners(); // Setup listeners after user is logged in
+                    } else {
+                        loggedInUser = null;
+                        console.log("Firebase Auth State Changed: Logged out.");
+                        hideAppContent();
+                    }
+                    loadingIndicator.classList.add('hidden'); // Hide loading once auth is resolved
+                });
+
+                // Ensure auth section is visible initially if no user is logged in
+                if (!auth.currentUser) {
+                    authSection.classList.remove('hidden');
+                    initialAuthOptions.classList.remove('hidden'); // Show initial options
+                    loadingIndicator.classList.add('hidden');
+                }
+
+            } catch (error) {
+                console.error("Failed to initialize Firebase:", error);
+                showCustomModal("Error", "Failed to initialize Firebase: " + error.message);
+                loadingIndicator.classList.add('hidden');
+            }
+        }
+
+        /**
+         * Sets up real-time listeners for health data and notes.
+         */
+        async function setupRealtimeListeners() {
+            if (!loggedInUser || !db) {
+                console.warn("Cannot set up listeners: user not logged in or Firestore not initialized.");
+                return;
+            }
+
+            const userId = loggedInUser.uid;
+            console.log(`Setting up listeners for user ID: ${userId}`);
+
+            // Health Data Listener
+            const healthCollectionRef = collection(db, `artifacts/${appId}/users/${userId}/healthData`);
+            onSnapshot(healthCollectionRef, (snapshot) => {
+                const data = [];
+                snapshot.forEach(doc => {
+                    data.push({ id: doc.id, ...doc.data() });
+                });
+                currentHealthData = data;
+                renderHealthData(currentHealthData);
+                console.log("Health data updated from Firestore:", currentHealthData);
+            }, (error) => {
+                console.error("Error listening to health data:", error);
+                showCustomModal("Error", "Failed to load health data: " + error.message);
+            });
+
+            // Notes Data Listener
+            const notesCollectionRef = collection(db, `artifacts/${appId}/users/${userId}/notes`);
+            onSnapshot(notesCollectionRef, (snapshot) => {
+                const data = [];
+                snapshot.forEach(doc => {
+                    data.push({ id: doc.id, ...doc.data() });
+                });
+                currentNotesData = data;
+                renderNotes(currentNotesData);
+                console.log("Notes data updated from Firestore:", currentNotesData);
+            }, (error) => {
+                console.error("Error listening to notes data:", error);
+                showCustomModal("Error", "Failed to load notes data: " + error.message);
+            });
+        }
+
 
         /**
          * Shows a custom modal dialog.
@@ -672,91 +914,10 @@
         }
 
         /**
-         * Loads all user data from localStorage.
-         * @returns {Object} - Object where keys are usernames and values are user data objects.
+         * Adds a new health entry to Firestore.
          */
-        function loadAllUsersData() {
-            try {
-                return JSON.parse(localStorage.getItem(LOCAL_STORAGE_USERS_KEY) || '{}');
-            } catch (e) {
-                console.error("Error loading all users data from localStorage:", e);
-                showCustomModal("Error", "Failed to load user data. " + e.message);
-                return {};
-            }
-        }
-
-        /**
-         * Saves all user data to localStorage.
-         * @param {Object} allUsersData - The object containing all user data.
-         */
-        function saveAllUsersData(allUsersData) {
-            try {
-                localStorage.setItem(LOCAL_STORAGE_USERS_KEY, JSON.stringify(allUsersData));
-            } catch (e) {
-                console.error("Error saving all users data to localStorage:", e);
-                showCustomModal("Error", "Failed to save user data. " + e.message);
-            }
-        }
-
-        /**
-         * Loads health data for the current user.
-         * @returns {Array<Object>} - An array of health entry objects.
-         */
-        function loadHealthData() {
-            if (!loggedInUser) return [];
-            const allUsersData = loadAllUsersData();
-            return allUsersData[loggedInUser] ? allUsersData[loggedInUser].healthData : [];
-        }
-
-        /**
-         * Saves health data for the current user.
-         * @param {Array<Object>} data - The array of health entry objects to save.
-         */
-        function saveHealthData(data) {
-            if (!loggedInUser) {
-                console.warn("Attempted to save health data without a logged-in user.");
-                return;
-            }
-            const allUsersData = loadAllUsersData();
-            if (!allUsersData[loggedInUser]) {
-                allUsersData[loggedInUser] = { password: '', healthData: [], notes: [] };
-            }
-            allUsersData[loggedInUser].healthData = data;
-            saveAllUsersData(allUsersData);
-        }
-
-        /**
-         * Loads notes data for the current user.
-         * @returns {Array<Object>} - An array of note objects.
-         */
-        function loadNotesData() {
-            if (!loggedInUser) return [];
-            const allUsersData = loadAllUsersData();
-            return allUsersData[loggedInUser] ? allUsersData[loggedInUser].notes : [];
-        }
-
-        /**
-         * Saves notes data for the current user.
-         * @param {Array<Object>} data - The array of note objects to save.
-         */
-        function saveNotesData(data) {
-            if (!loggedInUser) {
-                console.warn("Attempted to save notes data without a logged-in user.");
-                return;
-            }
-            const allUsersData = loadAllUsersData();
-            if (!allUsersData[loggedInUser]) {
-                allUsersData[loggedInUser] = { password: '', healthData: [], notes: [] };
-            }
-            allUsersData[loggedInUser].notes = data;
-            saveAllUsersData(allUsersData);
-        }
-
-        /**
-         * Adds a new health entry.
-         */
-        function addHealthEntry() {
-            if (!loggedInUser) {
+        async function addHealthEntry() {
+            if (!loggedInUser || !db) {
                 showCustomModal("Login Required", "Please log in to add health entries.");
                 return;
             }
@@ -765,33 +926,39 @@
                 return;
             }
 
-            const newEntry = {
-                id: Date.now().toString(), // Simple unique ID for local storage
-                date: dateInput.value,
-                timePeriod: timePeriodSelect.value,
-                bpLevel: bpLevelInput.value,
-                sugarLevel: parseInt(sugarLevelInput.value, 10),
-                timestamp: Date.now() // Add a timestamp for ordering
-            };
+            loadingIndicator.classList.remove('hidden');
+            try {
+                const healthCollectionRef = collection(db, `artifacts/${appId}/users/${loggedInUser.uid}/healthData`);
+                const newEntry = {
+                    date: dateInput.value,
+                    timePeriod: timePeriodSelect.value,
+                    bpLevel: bpLevelInput.value,
+                    sugarLevel: parseInt(sugarLevelInput.value, 10),
+                    timestamp: Date.now()
+                };
+                await addDoc(healthCollectionRef, newEntry);
+                showCustomModal("Success", "Health entry added successfully!");
 
-            const updatedData = loadHealthData(); // Load data for the current user
-            updatedData.push(newEntry);
-            saveHealthData(updatedData); // Save data for the current user
-            renderHealthData(updatedData);
+                // Clear form fields after successful submission
+                dateInput.value = '';
+                timePeriodSelect.value = 'Morning';
+                bpLevelInput.value = '';
+                sugarLevelInput.value = '';
 
-            // Clear form fields after successful submission
-            dateInput.value = '';
-            timePeriodSelect.value = 'Morning';
-            bpLevelInput.value = '';
-            sugarLevelInput.value = '';
+            } catch (e) {
+                console.error("Error adding health entry:", e);
+                showCustomModal("Error", "Failed to add health entry: " + e.message);
+            } finally {
+                loadingIndicator.classList.add('hidden');
+            }
         }
 
         /**
-         * Deletes a health entry.
-         * @param {string} idToDelete - The ID of the entry to delete.
+         * Deletes a health entry from Firestore.
+         * @param {string} idToDelete - The Firestore document ID of the entry to delete.
          */
         async function deleteHealthEntry(idToDelete) {
-            if (!loggedInUser) {
+            if (!loggedInUser || !db) {
                 showCustomModal("Login Required", "Please log in to delete health entries.");
                 return;
             }
@@ -799,17 +966,24 @@
             const confirmDelete = await showCustomModal(
                 "Confirm Delete",
                 "Are you sure you want to delete this entry?",
-                true // isConfirm = true
+                true
             );
 
             if (!confirmDelete) {
-                return; // User cancelled
+                return;
             }
 
-            let updatedData = loadHealthData();
-            updatedData = updatedData.filter(entry => entry.id !== idToDelete);
-            saveHealthData(updatedData);
-            renderHealthData(updatedData);
+            loadingIndicator.classList.remove('hidden');
+            try {
+                const docRef = doc(db, `artifacts/${appId}/users/${loggedInUser.uid}/healthData`, idToDelete);
+                await deleteDoc(docRef);
+                showCustomModal("Success", "Health entry deleted successfully!");
+            } catch (e) {
+                console.error("Error deleting health entry:", e);
+                showCustomModal("Error", "Failed to delete health entry: " + e.message);
+            } finally {
+                loadingIndicator.classList.add('hidden');
+            }
         }
 
         /**
@@ -817,16 +991,15 @@
          * @param {Array<Object>} data - An array of health entry objects.
          */
         function renderHealthData(data) {
-            healthDataTableBody.innerHTML = ''; // Clear existing rows
-            currentHealthData = data; // Update the global data array for export
+            healthDataTableBody.innerHTML = '';
+            currentHealthData = data;
 
             if (data.length === 0) {
                 healthDataTableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-gray-500">No entries yet. Add your first entry above!</td></tr>';
                 return;
             }
 
-            // Sort data by timestamp in descending order (most recent first)
-            data.sort((a, b) => b.timestamp - a.timestamp);
+            data.sort((a, b) => b.timestamp - a.timestamp); // Sort by timestamp descending
 
             data.forEach(entry => {
                 const row = healthDataTableBody.insertRow();
@@ -841,7 +1014,6 @@
                 `;
             });
 
-            // Attach event listeners to new delete buttons
             document.querySelectorAll('.delete-button').forEach(button => {
                 button.onclick = (event) => {
                     const docId = event.target.dataset.id;
@@ -871,25 +1043,108 @@
                 entry.sugarLevel
             ]);
 
-            // Combine headers and rows
             const dataForSheet = [headers, ...rows];
-
-            // Create a new workbook and a worksheet
             const wb = XLSX.utils.book_new();
             const ws = XLSX.utils.aoa_to_sheet(dataForSheet);
-
-            // Add the worksheet to the workbook
             XLSX.utils.book_append_sheet(wb, ws, "Health Data");
-
-            // Write the workbook to a file
-            XLSX.writeFile(wb, `${loggedInUser}_health_tracker.xlsx`);
+            XLSX.writeFile(wb, `${loggedInUser.email || loggedInUser.uid}_health_tracker.xlsx`);
         }
 
         /**
-         * Adds a new note for the current user.
+         * Imports health data from an Excel (.xlsx) file.
+         * Assumes the Excel file has columns: Date, Time Period, BP Level (mmHg), Sugar Level (mg/dL)
          */
-        function addNote() {
-            if (!loggedInUser) {
+        async function importFromExcel(event) {
+            if (!loggedInUser || !db) {
+                showCustomModal("Login Required", "Please log in to import data.");
+                return;
+            }
+
+            const file = event.target.files[0];
+            if (!file) {
+                return;
+            }
+
+            loadingIndicator.classList.remove('hidden');
+            const reader = new FileReader();
+
+            reader.onload = async (e) => {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const sheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[sheetName];
+                    const json = XLSX.utils.sheet_to_json(worksheet, { header: 1 }); // Get data as array of arrays
+
+                    if (json.length < 2) {
+                        showCustomModal("Import Error", "Excel file is empty or has no data rows.");
+                        return;
+                    }
+
+                    const headers = json[0];
+                    const expectedHeaders = ["Date", "Time Period", "BP Level (mmHg)", "Sugar Level (mg/dL)"];
+                    
+                    // Basic header validation
+                    if (!expectedHeaders.every(h => headers.includes(h))) {
+                        showCustomModal("Import Error", "Excel file headers do not match expected format. Expected: Date, Time Period, BP Level (mmHg), Sugar Level (mg/dL).");
+                        return;
+                    }
+
+                    const healthCollectionRef = collection(db, `artifacts/${appId}/users/${loggedInUser.uid}/healthData`);
+                    let importedCount = 0;
+
+                    for (let i = 1; i < json.length; i++) {
+                        const row = json[i];
+                        const dateIndex = headers.indexOf("Date");
+                        const timePeriodIndex = headers.indexOf("Time Period");
+                        const bpLevelIndex = headers.indexOf("BP Level (mmHg)");
+                        const sugarLevelIndex = headers.indexOf("Sugar Level (mg/dL)");
+
+                        const date = row[dateIndex];
+                        const timePeriod = row[timePeriodIndex];
+                        const bpLevel = row[bpLevelIndex];
+                        const sugarLevel = parseInt(row[sugarLevelIndex], 10);
+
+                        // Basic data validation for imported rows
+                        if (date && timePeriod && bpLevel && !isNaN(sugarLevel) && /^\d{2,3}\/\d{2,3}$/.test(bpLevel)) {
+                            const newEntry = {
+                                date: date,
+                                timePeriod: timePeriod,
+                                bpLevel: bpLevel,
+                                sugarLevel: sugarLevel,
+                                timestamp: Date.now() + i // Add a slight offset to maintain order if imported quickly
+                            };
+                            await addDoc(healthCollectionRef, newEntry);
+                            importedCount++;
+                        } else {
+                            console.warn("Skipping invalid row during import:", row);
+                        }
+                    }
+                    showCustomModal("Import Complete", `Successfully imported ${importedCount} health entries.`);
+                } catch (error) {
+                    console.error("Error importing Excel file:", error);
+                    showCustomModal("Import Error", "Failed to import Excel file. Please ensure it's a valid .xlsx or .xls file and follows the correct format. Error: " + error.message);
+                } finally {
+                    loadingIndicator.classList.add('hidden');
+                    event.target.value = ''; // Clear file input
+                }
+            };
+
+            reader.onerror = (error) => {
+                console.error("FileReader error:", error);
+                showCustomModal("File Read Error", "Failed to read the file. Please try again.");
+                loadingIndicator.classList.add('hidden');
+            };
+
+            reader.readAsArrayBuffer(file);
+        }
+
+
+        /**
+         * Adds a new note to Firestore.
+         */
+        async function addNote() {
+            if (!loggedInUser || !db) {
                 showCustomModal("Login Required", "Please log in to add notes.");
                 return;
             }
@@ -899,38 +1154,40 @@
                 return;
             }
 
-            const today = new Date();
-            const yyyy = today.getFullYear();
-            const mm = String(today.getMonth() + 1).padStart(2, '0');
-            const dd = String(today.getDate()).padStart(2, '0');
-            const noteDate = `${yyyy}-${mm}-${dd}`;
+            loadingIndicator.classList.remove('hidden');
+            try {
+                const notesCollectionRef = collection(db, `artifacts/${appId}/users/${loggedInUser.uid}/notes`);
+                const today = new Date();
+                const year = today.getFullYear();
+                const month = String(today.getMonth() + 1).padStart(2, '0');
+                const day = String(today.getDate()).padStart(2, '0');
+                const noteDate = `${year}-${month}-${day}`;
+                const rotation = (Math.random() * 6) - 3; // -3 to +3 degrees
 
-            // Generate a random rotation for the sticky note effect
-            const rotation = (Math.random() * 6) - 3; // -3 to +3 degrees
-
-            const newNote = {
-                id: Date.now().toString(),
-                date: noteDate,
-                text: noteText,
-                timestamp: Date.now(),
-                // Store initial position for new notes - offset from notesContainer
-                position: { x: 350 + Math.random() * 50, y: 20 + Math.random() * 50 }, // Random initial position near the notes area
-                rotation: rotation // Store rotation
-            };
-
-            const updatedNotes = loadNotesData();
-            updatedNotes.push(newNote);
-            saveNotesData(updatedNotes);
-            createAndAppendDraggableNote(newNote); // Create and append the new draggable note
-            noteInput.value = ''; // Clear the textarea
+                const newNote = {
+                    date: noteDate,
+                    text: noteText,
+                    timestamp: Date.now(),
+                    position: { x: 350 + Math.random() * 50, y: 20 + Math.random() * 50 },
+                    rotation: rotation
+                };
+                await addDoc(notesCollectionRef, newNote);
+                showCustomModal("Success", "Note added successfully!");
+                noteInput.value = '';
+            } catch (e) {
+                console.error("Error adding note:", e);
+                showCustomModal("Error", "Failed to add note: " + e.message);
+            } finally {
+                loadingIndicator.classList.add('hidden');
+            }
         }
 
         /**
-         * Deletes a note.
-         * @param {string} idToDelete - The ID of the note to delete.
+         * Deletes a note from Firestore.
+         * @param {string} idToDelete - The Firestore document ID of the note to delete.
          */
         async function deleteNote(idToDelete) {
-            if (!loggedInUser) {
+            if (!loggedInUser || !db) {
                 showCustomModal("Login Required", "Please log in to delete notes.");
                 return;
             }
@@ -938,20 +1195,42 @@
             const confirmDelete = await showCustomModal(
                 "Confirm Delete",
                 "Are you sure you want to delete this note?",
-                true // isConfirm = true
+                true
             );
 
             if (!confirmDelete) {
-                return; // User cancelled
+                return;
             }
 
-            let updatedNotes = loadNotesData();
-            updatedNotes = updatedNotes.filter(note => note.id !== idToDelete);
-            saveNotesData(updatedNotes);
-            // Remove the note box from the DOM
-            const noteBoxToRemove = document.getElementById(`note-${idToDelete}`);
-            if (noteBoxToRemove) {
-                noteBoxToRemove.remove();
+            loadingIndicator.classList.remove('hidden');
+            try {
+                const docRef = doc(db, `artifacts/${appId}/users/${loggedInUser.uid}/notes`, idToDelete);
+                await deleteDoc(docRef);
+                showCustomModal("Success", "Note deleted successfully!");
+            } catch (e) {
+                console.error("Error deleting note:", e);
+                showCustomModal("Error", "Failed to delete note: " + e.message);
+            } finally {
+                loadingIndicator.classList.add('hidden');
+            }
+        }
+
+        /**
+         * Updates a note's position in Firestore.
+         * @param {string} idToUpdate - The Firestore document ID of the note to update.
+         * @param {Object} newPosition - The new {x, y} position.
+         */
+        async function updateNotePosition(idToUpdate, newPosition) {
+            if (!loggedInUser || !db) {
+                console.warn("Cannot update note position: user not logged in or Firestore not initialized.");
+                return;
+            }
+            try {
+                const docRef = doc(db, `artifacts/${appId}/users/${loggedInUser.uid}/notes`, idToUpdate);
+                await updateDoc(docRef, { position: newPosition });
+                console.log(`Note ${idToUpdate} position updated to x=${newPosition.x}, y=${newPosition.y}`);
+            } catch (e) {
+                console.error("Error updating note position:", e);
             }
         }
 
@@ -960,23 +1239,22 @@
          * @param {Object} note - The note object.
          */
         function createAndAppendDraggableNote(note) {
-            const noteBox = document.createElement('div');
-            noteBox.id = `note-${note.id}`; // Unique ID for the DOM element
-            noteBox.className = 'draggable-note-box';
-            
-            // Set initial position if available, otherwise default
-            if (note.position && typeof note.position.x === 'number' && typeof note.position.y === 'number') {
-                noteBox.style.left = `${note.position.x}px`;
-                noteBox.style.top = `${note.position.y}px`;
-            } else {
-                // Default position for notes without saved position (to the right of notes container)
-                noteBox.style.left = '350px'; // 20px body padding + 300px notesContainer width + 30px gap
-                noteBox.style.top = `20px`; // Start at the top
+            // Remove existing note box if it exists (for re-rendering on update)
+            const existingNoteBox = document.getElementById(`note-${note.id}`);
+            if (existingNoteBox) {
+                existingNoteBox.remove();
             }
 
-            // Apply rotation
-            noteBox.style.setProperty('--rotation', note.rotation || 0);
+            const noteBox = document.createElement('div');
+            noteBox.id = `note-${note.id}`;
+            noteBox.className = 'draggable-note-box';
+            
+            let posX = typeof note.position?.x === 'number' ? note.position.x : (350 + Math.random() * 50);
+            let posY = typeof note.position?.y === 'number' ? note.position.y : (20 + Math.random() * 50);
 
+            noteBox.style.left = `${posX}px`;
+            noteBox.style.top = `${posY}px`;
+            noteBox.style.setProperty('--rotation', note.rotation || 0);
 
             noteBox.innerHTML = `
                 <div class="draggable-note-header">
@@ -985,12 +1263,11 @@
                 </div>
                 <p class="draggable-note-text">${note.text}</p>
             `;
-            document.body.appendChild(noteBox); // Append directly to body
+            document.body.appendChild(noteBox);
 
             const header = noteBox.querySelector('.draggable-note-header');
             const deleteButton = noteBox.querySelector('.note-delete-button-draggable');
 
-            // Attach drag events
             header.addEventListener('mousedown', (e) => {
                 isDragging = true;
                 currentDraggable = noteBox;
@@ -998,18 +1275,23 @@
                 initialMouseY = e.clientY;
                 initialElementX = noteBox.offsetLeft;
                 initialElementY = noteBox.offsetTop;
-                currentDraggable.classList.add('dragging'); // Add dragging class for visual feedback
-                // Bring the dragged note to the front
+                currentDraggable.classList.add('dragging');
                 currentDraggable.style.zIndex = 1000;
-                // Prevent text selection during drag
-                e.preventDefault();
+                e.preventDefault(); // Prevent text selection
             });
 
-            // Attach delete event
             deleteButton.addEventListener('click', (e) => {
                 deleteNote(e.target.dataset.id);
             });
         }
+
+        // Dragging variables for notes
+        let isDragging = false;
+        let currentDraggable = null;
+        let initialMouseX;
+        let initialMouseY;
+        let initialElementX;
+        let initialElementY;
 
         /**
          * Handles mousemove event for dragging notes.
@@ -1024,7 +1306,6 @@
             let newX = initialElementX + dx;
             let newY = initialElementY + dy;
 
-            // Constrain movement within the viewport
             const maxX = window.innerWidth - currentDraggable.offsetWidth;
             const maxY = window.innerHeight - currentDraggable.offsetHeight;
 
@@ -1043,21 +1324,16 @@
             if (!isDragging || !currentDraggable) return;
 
             isDragging = false;
-            currentDraggable.classList.remove('dragging'); // Remove dragging class
-            currentDraggable.style.cursor = 'grab'; // Reset cursor
-            currentDraggable.style.zIndex = 101; // Reset z-index
+            currentDraggable.classList.remove('dragging');
+            currentDraggable.style.cursor = 'grab';
+            currentDraggable.style.zIndex = 101;
 
-            // Save the new position to localStorage
             const noteId = currentDraggable.id.replace('note-', '');
-            let updatedNotes = loadNotesData();
-            const noteIndex = updatedNotes.findIndex(note => note.id === noteId);
-            if (noteIndex !== -1) {
-                updatedNotes[noteIndex].position = {
-                    x: currentDraggable.offsetLeft,
-                    y: currentDraggable.offsetTop
-                };
-                saveNotesData(updatedNotes);
-            }
+            const newPosition = {
+                x: currentDraggable.offsetLeft,
+                y: currentDraggable.offsetTop
+            };
+            updateNotePosition(noteId, newPosition); // Update position in Firestore
             currentDraggable = null;
         }
 
@@ -1065,23 +1341,19 @@
         document.addEventListener('mousemove', onMouseMove);
         document.addEventListener('mouseup', onMouseUp);
 
-
         /**
          * Renders the notes for the current user.
          * @param {Array<Object>} data - An array of note objects.
          */
         function renderNotes(data) {
-            // Remove existing draggable notes from the body before re-rendering
+            // Remove all draggable notes from the body before re-rendering
             document.querySelectorAll('.draggable-note-box').forEach(noteBox => noteBox.remove());
-
-            currentNotesData = data; // Update global notes data
+            currentNotesData = data;
 
             if (data.length === 0) {
-                // No notes to display, no placeholder needed as notes are individual boxes
                 return;
             }
 
-            // Sort notes by timestamp in descending order (most recent first)
             data.sort((a, b) => b.timestamp - a.timestamp);
 
             data.forEach(note => {
@@ -1091,68 +1363,262 @@
 
 
         /**
-         * Authenticates a user.
-         * @param {string} username
+         * Authenticates a user with Firebase Email/Password.
+         * Attempts login first, and if user not found, prompts to register.
+         * @param {string} email
          * @param {string} password
-         * @returns {boolean} True if login successful, false otherwise.
+         * @returns {Promise<boolean>} - Resolves true if login/registration successful, false otherwise.
          */
-        function loginUser(username, password) {
-            const users = loadAllUsersData();
-            if (users[username] && users[username].password === password) {
-                loggedInUser = username;
-                localStorage.setItem(LOCAL_STORAGE_CURRENT_USER_KEY, username);
-                showAppContent();
-                showCustomModal("Success", `Welcome, ${username}!`);
+        async function loginUser(email, password) {
+            loadingIndicator.classList.remove('hidden');
+            authError.style.display = 'none';
+            try {
+                // Attempt to sign in
+                await signInWithEmailAndPassword(auth, email, password);
+                showCustomModal("Success", `Welcome, ${email}!`);
                 return true;
-            }
-            authError.textContent = "Invalid username or password.";
-            authError.style.display = 'block';
-            return false;
-        }
+            } catch (error) {
+                console.error("Login error:", error);
+                let errorMessage = "Login failed. Please check your email and password.";
 
-        /**
-         * Registers a new user.
-         * @param {string} username
-         * @param {string} password
-         * @returns {boolean} True if registration successful, false otherwise.
-         */
-        function registerUser(username, password) {
-            const users = loadAllUsersData();
-            if (users[username]) {
-                authError.textContent = "Username already exists. Please choose a different one or login.";
+                if (error.code === 'auth/user-not-found') {
+                    // If user not found, ask to register
+                    const confirmRegister = await showCustomModal(
+                        "Account Not Found",
+                        `No account found for ${email}. Do you want to register a new account with this email?`,
+                        true
+                    );
+                    if (confirmRegister) {
+                        try {
+                            if (password.length < 6) {
+                                authError.textContent = "Password must be at least 6 characters long for registration.";
+                                authError.style.display = 'block';
+                                return false;
+                            }
+                            await createUserWithEmailAndPassword(auth, email, password);
+                            showCustomModal("Success", `Account created and logged in as ${email}!`);
+                            return true;
+                        } catch (registerError) {
+                            console.error("Registration error after login attempt:", registerError);
+                            let registerErrorMessage = "Registration failed.";
+                            if (registerError.code === 'auth/email-already-in-use') {
+                                registerErrorMessage = "This email is already registered. Please log in with your existing password.";
+                            } else if (registerError.code === 'auth/invalid-email') {
+                                registerErrorMessage = "Please enter a valid email address for registration.";
+                            } else if (registerError.code === 'auth/weak-password') {
+                                registerErrorMessage = "Password is too weak. It must be at least 6 characters.";
+                            }
+                            authError.textContent = registerErrorMessage;
+                            authError.style.display = 'block';
+                            return false;
+                        }
+                    } else {
+                        // User chose not to register
+                        authError.textContent = "Login failed. Please try again or register.";
+                        authError.style.display = 'block';
+                        return false;
+                    }
+                } else if (error.code === 'auth/wrong-password') {
+                    errorMessage = "Invalid password. Please try again.";
+                } else if (error.code === 'auth/invalid-email') {
+                    errorMessage = "Please enter a valid email address.";
+                }
+                authError.textContent = errorMessage;
                 authError.style.display = 'block';
                 return false;
+            } finally {
+                loadingIndicator.classList.add('hidden');
             }
-            if (username.length < 3 || password.length < 3) {
-                 authError.textContent = "Username and password must be at least 3 characters long.";
-                 authError.style.display = 'block';
-                 return false;
-            }
-
-            users[username] = { password: password, healthData: [], notes: [] }; // Initialize notes array for new user
-            saveAllUsersData(users);
-            loggedInUser = username;
-            localStorage.setItem(LOCAL_STORAGE_CURRENT_USER_KEY, username);
-            showAppContent();
-            showCustomModal("Success", `Account created and logged in as ${username}!`);
-            return true;
         }
 
         /**
-         * Logs out the current user.
+         * Registers a new user with Firebase Email/Password.
+         * @param {string} email
+         * @param {string} password
+         * @returns {Promise<boolean>} - Resolves true if registration successful, false otherwise.
          */
-        function logoutUser() {
-            loggedInUser = null;
-            localStorage.removeItem(LOCAL_STORAGE_CURRENT_USER_KEY);
-            hideAppContent();
-            authUsernameInput.value = '';
-            authPasswordInput.value = '';
+        async function registerUser(email, password) {
+            loadingIndicator.classList.remove('hidden');
             authError.style.display = 'none';
-            authTitle.textContent = 'Register'; // Default to Register on logout
-            toggleAuthModeLink.textContent = "Already have an account? Login here."; // Update link text
-            loginButton.classList.add('hidden'); // Hide login button
-            registerButton.classList.remove('hidden'); // Show register button
-            showCustomModal("Logged Out", "You have been successfully logged out.");
+            try {
+                if (password.length < 6) {
+                    authError.textContent = "Password must be at least 6 characters long.";
+                    authError.style.display = 'block';
+                    return false;
+                }
+                await createUserWithEmailAndPassword(auth, email, password);
+                showCustomModal("Success", `Account created and logged in as ${email}!`);
+                return true;
+            } catch (error) {
+                console.error("Registration error:", error);
+                let errorMessage = "Registration failed.";
+                if (error.code === 'auth/email-already-in-use') {
+                    errorMessage = "This email is already registered. Please log in.";
+                } else if (error.code === 'auth/invalid-email') {
+                    errorMessage = "Please enter a valid email address.";
+                } else if (error.code === 'auth/weak-password') {
+                    errorMessage = "Password is too weak. It must be at least 6 characters.";
+                }
+                authError.textContent = errorMessage;
+                authError.style.display = 'block';
+                return false;
+            } finally {
+                loadingIndicator.classList.add('hidden');
+            }
+        }
+
+        /**
+         * Handles Google Sign-In.
+         */
+        async function signInWithGoogle() {
+            loadingIndicator.classList.remove('hidden');
+            authError.style.display = 'none';
+            try {
+                const provider = new GoogleAuthProvider();
+                await signInWithPopup(auth, provider);
+                showCustomModal("Success", `Welcome, ${auth.currentUser.email}!`);
+            } catch (error) {
+                console.error("Google Sign-In error:", error);
+                let errorMessage = "Google Sign-In failed.";
+                if (error.code === 'auth/popup-closed-by-user') {
+                    errorMessage = "Sign-in popup closed. Please try again.";
+                } else if (error.code === 'auth/cancelled-popup-request') {
+                    errorMessage = "Sign-in popup already open. Please complete the existing one.";
+                } else if (error.code === 'auth/operation-not-allowed') {
+                    errorMessage = "Google Sign-In is not enabled for this project. Please enable it in Firebase console (Authentication -> Sign-in method).";
+                } else if (error.code === 'auth/account-exists-with-different-credential') {
+                    errorMessage = "An account with this email already exists using a different sign-in method. Please log in with your existing method.";
+                } else if (error.code === 'auth/unauthorized-domain') {
+                    errorMessage = "Unauthorized domain. Please add your domain to the OAuth redirect domains in Firebase console (Authentication -> Settings -> Authorized domains).";
+                }
+                authError.textContent = errorMessage;
+                authError.style.display = 'block';
+            } finally {
+                loadingIndicator.classList.add('hidden');
+            }
+        }
+
+        /**
+         * Handles Phone Number Sign-In (sends SMS).
+         */
+        async function signInWithPhone() {
+            loadingIndicator.classList.remove('hidden');
+            authError.style.display = 'none';
+            const phoneNumber = phoneNumberInput.value.trim();
+
+            if (!phoneNumber) {
+                showCustomModal("Input Required", "Please enter a phone number.");
+                loadingIndicator.classList.add('hidden');
+                return;
+            }
+
+            // Render reCAPTCHA if not already rendered
+            if (!window.recaptchaVerifier) {
+                window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+                    'size': 'normal',
+                    'callback': (response) => {
+                        // reCAPTCHA solved, allow signInWithPhoneNumber.
+                        console.log("reCAPTCHA solved:", response);
+                        sendSmsButton.disabled = false; // Enable button once reCAPTCHA is solved
+                    },
+                    'expired-callback': () => {
+                        // Response expired. Ask user to solve reCAPTCHA again.
+                        console.log("reCAPTCHA expired.");
+                        sendSmsButton.disabled = true;
+                        showCustomModal("reCAPTCHA Expired", "Please solve the reCAPTCHA again.");
+                    }
+                });
+                try {
+                    await window.recaptchaVerifier.render();
+                    console.log("reCAPTCHA rendered.");
+                } catch (error) {
+                    console.error("Error rendering reCAPTCHA:", error);
+                    showCustomModal("Error", "Failed to load reCAPTCHA. Please try again later.");
+                    loadingIndicator.classList.add('hidden');
+                    return;
+                }
+            }
+            
+            sendSmsButton.disabled = true; // Disable button to prevent multiple requests
+
+            try {
+                confirmationResult = await signInWithPhoneNumber(auth, phoneNumber, window.recaptchaVerifier);
+                showCustomModal("SMS Sent", `Verification code sent to ${phoneNumber}.`);
+                phoneVerificationSection.classList.remove('hidden'); // Show code input section
+                phoneInputSection.classList.add('hidden'); // Hide phone input section
+            } catch (error) {
+                console.error("Phone Sign-In error:", error);
+                let errorMessage = "Failed to send verification code.";
+                if (error.code === 'auth/invalid-phone-number') {
+                    errorMessage = "Invalid phone number format. Please use E.164 format (e.g., +1234567890).";
+                } else if (error.code === 'auth/quota-exceeded') {
+                    errorMessage = "SMS quota exceeded or too many requests. Please try again later.";
+                } else if (error.code === 'auth/missing-phone-number') {
+                    errorMessage = "Please enter a phone number.";
+                } else if (error.code === 'auth/web-storage-unsupported') {
+                    errorMessage = "Browser storage is not supported or disabled. Please enable cookies/local storage.";
+                }
+                authError.textContent = errorMessage;
+                authError.style.display = 'block';
+            } finally {
+                loadingIndicator.classList.add('hidden');
+                sendSmsButton.disabled = false; // Re-enable button
+            }
+        }
+
+        /**
+         * Verifies the SMS code for Phone Number Sign-In.
+         */
+        async function verifySmsCode() {
+            loadingIndicator.classList.remove('hidden');
+            authError.style.display = 'none';
+            const code = verificationCodeInput.value.trim();
+
+            if (!code) {
+                showCustomModal("Input Required", "Please enter the verification code.");
+                loadingIndicator.classList.add('hidden');
+                return;
+            }
+            if (confirmationResult) {
+                try {
+                    await confirmationResult.confirm(code);
+                    showCustomModal("Success", "Phone number verified and logged in!");
+                    phoneVerificationSection.classList.add('hidden'); // Hide verification section
+                    // reCAPTCHA will be reset by Firebase on successful sign-in
+                } catch (error) {
+                    console.error("SMS code verification error:", error);
+                    let errorMessage = "Invalid verification code. Please try again.";
+                    if (error.code === 'auth/invalid-verification-code') {
+                        errorMessage = "The verification code is invalid.";
+                    } else if (error.code === 'auth/code-expired') {
+                        errorMessage = "The verification code has expired. Please resend.";
+                    }
+                    authError.textContent = errorMessage;
+                    authError.style.display = 'block';
+                } finally {
+                    loadingIndicator.classList.add('hidden');
+                }
+            } else {
+                showCustomModal("Error", "No verification process initiated. Please try phone sign-in again.");
+                loadingIndicator.classList.add('hidden');
+            }
+        }
+
+
+        /**
+         * Logs out the current user from Firebase.
+         */
+        async function logoutUser() {
+            loadingIndicator.classList.remove('hidden');
+            try {
+                await signOut(auth);
+                showCustomModal("Logged Out", "You have been successfully logged out.");
+            } catch (error) {
+                console.error("Logout error:", error);
+                showCustomModal("Error", "Failed to log out: " + error.message);
+            } finally {
+                loadingIndicator.classList.add('hidden');
+            }
         }
 
         /**
@@ -1161,12 +1627,9 @@
         function showAppContent() {
             authSection.classList.add('hidden');
             appContent.classList.remove('hidden');
-            loggedInUsernameSpan.textContent = `Logged in as: ${loggedInUser}`;
             loggedInUsernameSpan.classList.remove('hidden');
             logoutButton.classList.remove('hidden');
-            notesContainer.classList.remove('hidden'); // Show notes input container
-            renderHealthData(loadHealthData()); // Load health data for the newly logged-in user
-            renderNotes(loadNotesData()); // Load notes for the newly logged-in user
+            notesContainer.classList.remove('hidden');
         }
 
         /**
@@ -1177,76 +1640,144 @@
             authSection.classList.remove('hidden');
             loggedInUsernameSpan.classList.add('hidden');
             logoutButton.classList.add('hidden');
-            notesContainer.classList.add('hidden'); // Hide notes input container
-            healthDataTableBody.innerHTML = ''; // Clear table on logout
-            // Remove all draggable notes from the body on logout
+            notesContainer.classList.add('hidden');
+            healthDataTableBody.innerHTML = '';
             document.querySelectorAll('.draggable-note-box').forEach(noteBox => noteBox.remove());
+            phoneVerificationSection.classList.add('hidden');
+            emailPasswordSection.classList.add('hidden');
+            phoneInputSection.classList.add('hidden');
+            initialAuthOptions.classList.remove('hidden'); // Show initial auth options
+            // Reset reCAPTCHA if it exists and is not destroyed by Firebase already
+            if (window.recaptchaVerifier && window.recaptchaVerifier.reset) {
+                window.recaptchaVerifier.reset();
+            }
         }
+
+        // Function to show the initial auth options and hide all specific input sections
+        function showAuthOptions() {
+            initialAuthOptions.classList.remove('hidden'); // Ensure initial options are visible
+            emailPasswordSection.classList.add('hidden');
+            phoneInputSection.classList.add('hidden');
+            phoneVerificationSection.classList.add('hidden');
+            // Reset reCAPTCHA if it exists
+            if (window.recaptchaVerifier && window.recaptchaVerifier.reset) {
+                window.recaptchaVerifier.reset();
+            }
+            authError.style.display = 'none'; // Clear any auth errors
+            authEmailInput.value = '';
+            authPasswordInput.value = '';
+            phoneNumberInput.value = '';
+            verificationCodeInput.value = '';
+            authTitle.textContent = 'Log in or sign up'; // Reset title
+        }
+
 
         // Event Listeners
         window.onload = () => {
             // Set today's date as default for health data input
             const today = new Date();
-            const yyyy = today.getFullYear();
-            const mm = String(today.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
-            const dd = String(today.getDate()).padStart(2, '0');
-            dateInput.value = `${yyyy}-${mm}-${dd}`;
+            const year = today.getFullYear(); 
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            dateInput.value = `${year}-${month}-${day}`;
 
-            // Check for a logged-in user on load
-            const storedUser = localStorage.getItem(LOCAL_STORAGE_CURRENT_USER_KEY);
-            if (storedUser) {
-                loggedInUser = storedUser;
-                showAppContent();
-            } else {
-                // Default to Register mode if no user is logged in
-                authTitle.textContent = 'Register';
-                toggleAuthModeLink.textContent = "Already have an account? Login here.";
-                loginButton.classList.add('hidden');
-                registerButton.classList.remove('hidden');
-                hideAppContent();
-            }
+            initializeFirebase(); // Initialize Firebase on window load
         };
 
         addEntryButton.addEventListener('click', addHealthEntry);
         exportExcelButton.addEventListener('click', exportToExcel);
-        addNoteButton.addEventListener('click', addNote); // Event listener for add note button
+        importExcelButton.addEventListener('click', () => importExcelInput.click()); // Trigger hidden file input click
+        importExcelInput.addEventListener('change', importFromExcel); // Listen for file selection
+        addNoteButton.addEventListener('click', addNote);
 
         // Auth event listeners
         loginButton.addEventListener('click', () => {
             authError.style.display = 'none';
-            loginUser(authUsernameInput.value, authPasswordInput.value);
+            loginUser(authEmailInput.value, authPasswordInput.value);
         });
 
         registerButton.addEventListener('click', () => {
             authError.style.display = 'none';
-            registerUser(authUsernameInput.value, authPasswordInput.value);
+            registerUser(authEmailInput.value, authPasswordInput.value);
         });
 
         logoutButton.addEventListener('click', logoutUser);
 
-        toggleAuthModeLink.addEventListener('click', (e) => {
-            e.preventDefault();
-            authError.style.display = 'none';
-            authUsernameInput.value = '';
-            authPasswordInput.value = '';
-            if (authTitle.textContent === 'Login') {
-                authTitle.textContent = 'Register';
-                toggleAuthModeLink.textContent = "Already have an account? Login here.";
-                loginButton.classList.add('hidden');
-                registerButton.classList.remove('hidden');
-            } else {
-                authTitle.textContent = 'Login';
-                toggleAuthModeLink.textContent = "Don't have an account? Register here.";
-                loginButton.classList.remove('hidden');
-                registerButton.classList.add('hidden');
+        googleSignInButton.addEventListener('click', signInWithGoogle);
+        sendSmsButton.addEventListener('click', signInWithPhone);
+        verifyCodeButton.addEventListener('click', verifySmsCode);
+
+        // New event listeners for navigation between auth sections
+        emailAuthButton.addEventListener('click', () => {
+            initialAuthOptions.classList.add('hidden'); // Hide initial options
+            emailPasswordSection.classList.remove('hidden');
+            authTitle.textContent = 'Continue with email';
+        });
+
+        phoneAuthButton.addEventListener('click', () => {
+            initialAuthOptions.classList.add('hidden'); // Hide initial options
+            phoneInputSection.classList.remove('hidden');
+            authTitle.textContent = 'Log in with mobile';
+            // Render reCAPTCHA when phone input section is shown
+            if (!window.recaptchaVerifier) {
+                window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+                    'size': 'normal',
+                    'callback': (response) => {
+                        console.log("reCAPTCHA solved:", response);
+                        sendSmsButton.disabled = false;
+                    },
+                    'expired-callback': () => {
+                        console.log("reCAPTCHA expired.");
+                        sendSmsButton.disabled = true;
+                        showCustomModal("reCAPTCHA Expired", "Please solve the reCAPTCHA again.");
+                    }
+                });
+                window.recaptchaVerifier.render().catch(error => {
+                    console.error("Error rendering reCAPTCHA:", error);
+                    showCustomModal("Error", "Failed to load reCAPTCHA. Please try again later.");
+                });
             }
         });
+
+        backToOptionsLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            showAuthOptions();
+        });
+
+        backToOptionsPhoneLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            showAuthOptions();
+        });
+
+        backToPhoneInputLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            phoneVerificationSection.classList.add('hidden');
+            phoneInputSection.classList.remove('hidden');
+            authError.style.display = 'none';
+            verificationCodeInput.value = '';
+            // Reset reCAPTCHA if it exists
+            if (window.recaptchaVerifier && window.recaptchaVerifier.reset) {
+                window.recaptchaVerifier.reset();
+            }
+        });
+
+        resendCodeLink.addEventListener('click', async (e) => {
+            e.preventDefault();
+            if (phoneNumberInput.value.trim() && window.recaptchaVerifier) {
+                await signInWithPhone(); // Re-use the send SMS function
+            } else {
+                showCustomModal("Error", "Please enter a phone number first.");
+            }
+        });
+
 
         // Hide error messages on input change
         bpLevelInput.addEventListener('input', () => bpError.style.display = 'none');
         sugarLevelInput.addEventListener('input', () => sugarError.style.display = 'none');
-        authUsernameInput.addEventListener('input', () => authError.style.display = 'none');
+        authEmailInput.addEventListener('input', () => authError.style.display = 'none');
         authPasswordInput.addEventListener('input', () => authError.style.display = 'none');
+        phoneNumberInput.addEventListener('input', () => authError.style.display = 'none');
+        verificationCodeInput.addEventListener('input', () => authError.style.display = 'none');
         noteInput.addEventListener('input', () => { /* No specific error for notes, but can be added */ });
     </script>
 </body>
