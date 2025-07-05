@@ -956,6 +956,10 @@
         let loggedInUser = null; // Firebase User object
         let confirmationResult = null; // Used for phone authentication
 
+        // Unsubscribe functions for Firestore listeners
+        let unsubscribeHealthData = null;
+        let unsubscribeNotes = null;
+
         // Data arrays (will be populated from Firestore via snapshots)
         let currentHealthData = [];
         let currentNotesData = [];
@@ -1002,10 +1006,19 @@
 
                         showAppContent();
                         showPage('homePage'); // Show home page after login
-                        await setupRealtimeListeners(); // Setup listeners after user is logged in
+                        setupRealtimeListeners(); // Setup listeners when user is logged in
                     } else {
                         loggedInUser = null;
                         console.log("Firebase Auth State Changed: Logged out.");
+                        // Unsubscribe from all listeners when user logs out
+                        if (unsubscribeHealthData) {
+                            unsubscribeHealthData();
+                            unsubscribeHealthData = null;
+                        }
+                        if (unsubscribeNotes) {
+                            unsubscribeNotes();
+                            unsubscribeNotes = null;
+                        }
                         hideAppContent();
                     }
                     loadingIndicator.classList.add('hidden'); // Hide loading once auth is resolved
@@ -1094,7 +1107,7 @@
         /**
          * Sets up real-time listeners for health data and notes.
          */
-        async function setupRealtimeListeners() {
+        function setupRealtimeListeners() {
             if (!loggedInUser || !db) {
                 console.warn("Cannot set up listeners: user not logged in or Firestore not initialized.");
                 return;
@@ -1105,7 +1118,7 @@
 
             // Health Data Listener
             const healthCollectionRef = collection(db, `artifacts/${appId}/users/${userId}/healthData`);
-            onSnapshot(healthCollectionRef, (snapshot) => {
+            unsubscribeHealthData = onSnapshot(healthCollectionRef, (snapshot) => {
                 const data = [];
                 snapshot.forEach(doc => {
                     data.push({ id: doc.id, ...doc.data() });
@@ -1118,12 +1131,15 @@
                 console.log("Health data updated from Firestore:", currentHealthData);
             }, (error) => {
                 console.error("Error listening to health data:", error);
-                showCustomModal("Error", "Failed to load health data: " + error.message);
+                // Only show modal if user is logged in, otherwise it's expected permission error on logout
+                if (loggedInUser) {
+                    showCustomModal("Error", "Failed to load health data: " + error.message);
+                }
             });
 
             // Notes Data Listener
             const notesCollectionRef = collection(db, `artifacts/${appId}/users/${userId}/notes`);
-            onSnapshot(notesCollectionRef, (snapshot) => {
+            unsubscribeNotes = onSnapshot(notesCollectionRef, (snapshot) => {
                 const data = [];
                 snapshot.forEach(doc => {
                     data.push({ id: doc.id, ...doc.data() });
@@ -1133,7 +1149,10 @@
                 console.log("Notes data updated from Firestore:", currentNotesData);
             }, (error) => {
                 console.error("Error listening to notes data:", error);
-                showCustomModal("Error", "Failed to load notes data: " + error.message);
+                // Only show modal if user is logged in, otherwise it's expected permission error on logout
+                if (loggedInUser) {
+                    showCustomModal("Error", "Failed to load notes data: " + error.message);
+                }
             });
         }
 
